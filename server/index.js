@@ -13,9 +13,7 @@ function decodeData(data) {
     let _cmd = data.readInt16BE();
     let _body = JSON.parse(data.slice(2));
     const _funcName = ENUM_CMD_FN[_cmd];
-    if(_cmd == ENUM_CMD_FN.ready_C2S){
-        dealCards_S2C();
-    }
+    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 
 function send(cmd, data) {
@@ -30,18 +28,12 @@ server.listen(8080, () => {
     console.log("server listening on 127.0.0.1:8080")
 });
 
-function requestRoute(cmd, dataBody) {
-    if (cmd == ENUM_CMD_FN.ready_C2S) {
-        dealCards_S2C();
-    }
-}
-
 //============= game logic bellow ===============
 var playerCardsDic = {};
 var playerCount = 3;
 var initialCardCount = 17;
 var lordCardCount = 3;
-function dealCards_S2C() {
+this.dealCards_S2C = function () {
     let _pokerPool = POKER_VALUES.slice().shuffle();
     for (let i = 0; i < playerCount; i++) {
         playerCardsDic[i] = _pokerPool.slice(i * initialCardCount, (i + 1) * initialCardCount);
@@ -55,7 +47,10 @@ function dealCards_S2C() {
     }
     send(ENUM_CMD_FN.dealCards_S2C, data);
 }
-
+this.ready_C2S = function () {
+    this.dealCards_S2C();
+}
+//============== data and custom function bellow ==============
 Array.prototype.shuffle = function () {
     var input = this;
     for (var i = input.length - 1; i >= 0; i--) {

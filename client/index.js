@@ -15,16 +15,17 @@ socket.on('error', (buffer) => {
     console.log(buffer);
 });
 
+var _this = this;
+function decodeData (buffer) {
+    const _cmd = buffer.readInt16BE();
+    const _body = JSON.parse(buffer.slice(2));
+    const _funcName = ENUM_CMD_FN[_cmd];
+    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
+}
+
 function onConnected() {
     startGame();
 }
-
-/* function decode(dataBuffer) {
-    let _header = dataBuffer.slice(0, 2);
-    let cmd = _header.readInt16BE();
-    let body = JSON.parse(dataBuffer.slice(2));
-    return { cmd, body };
-} */
 
 function request(data) {
     const bufferData = encodeData(data);
@@ -55,7 +56,7 @@ this.dealCards_S2C = function (data) {
     console.log(`${_score} score`);
     request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, data: { 'score': _score } });
 }
-function playCards_S2C(data) {
+this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
     let _seatNumber = data.seatNumber;
     if (_cardsPlayed == "") {
@@ -64,33 +65,25 @@ function playCards_S2C(data) {
         console.log(`Player ${_seatNumber}-> played ${_seatNumber}.`)
     }
 }
-function playNotAllowRule_S2C() {
+this.playNotAllowRule_S2C = function () {
     console.log("Cards are not allowed.")
 }
-function gameEnd_S2C(data) {
+this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
     let _isWin = _winnerSeatNumber === 0;
     let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
     console.log(_content);
 }
 
-function competeForLandLordRole_C2S() {
+this.competeForLandLordRole_C2S = function () {
 
 }
-function playCards_C2S() {
+this.playCards_C2S = function () {
     console.log('Now, your turn.');
     console.log('Your cards->', mCardsArr.join(','));
     console.log('Please input your cards to play (join with ",", press Enter to confirm):');
     let _cards = convert2CardNumbers(getInputFromCmd());
     request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cards, 'seatNumber': 0 } });
-}
-
-var _this = this;
-function decodeData(buffer) {
-    const _cmd = buffer.readInt16BE();
-    const _body = JSON.parse(buffer.slice(2));
-    const _funcName = ENUM_CMD_FN[_cmd];
-    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 
 //=============== define custom function below ==================
