@@ -9,7 +9,7 @@ socket.connect({
 }, onConnected);
 
 socket.on('data', (buffer) => {
-    decode(buffer);
+    decodeData(buffer);
 })
 socket.on('error', (buffer) => {
     console.log(buffer);
@@ -19,43 +19,38 @@ function onConnected() {
     startGame();
 }
 
-function decode(data) {
-    console.log(JSON.parse(data).msg);
-}
+/* function decode(dataBuffer) {
+    let _header = dataBuffer.slice(0, 2);
+    let cmd = _header.readInt16BE();
+    let body = JSON.parse(dataBuffer.slice(2));
+    return { cmd, body };
+} */
 
 function request(data) {
-    const bufferData = Buffer.from(JSON.stringify({ 'msg': data }));
+    const bufferData = encodeData(data);
     socket.write(bufferData);
 }
 
 function startGame() {
-    request('Hello, world!')
+    request({ cmd: ENUM_CMD_FN.ready_C2S, body: null })
 }
 
 function encodeData(data) {
-    const body = Buffer.from(JSON.stringify(data.data));
+    const body = Buffer.from(JSON.stringify(data.body));
     const header = Buffer.alloc(2);
     header.writeUInt16BE(data.cmd);
     const buffer = Buffer.concat([header, body]);
     return buffer;
 }
 
-function decode(buffer) {
-    const _cmdNum = buffer.readInt16BE();
-    const _body = JSON.parse(buffer.slice(2));
-    const _func = ENUM_CMD_FN[_cmdNum];
-    if (_func) _func(_body);
-}
-
-//============== game process below ==================
+//============== game process function below ==================
 let mCardsArr = [];
-function dealCards_S2C(data) {
+this.dealCards_S2C = function (data) {
     let _cards = data.cards;
     mCardsArr = sortByValue(_cards);
-    console.log('dealCards -> ', mCardsArr);
     myHandCardsShowArr = convert2ReadableNames(mCardsArr);
-    console.log('deal cards complete, your seat number is-> ', data.seat, 'your cards->', mCardsArr.join(','));
-    console.log('start select a score to confirm role (you can input 1|2|3, the one who select the biggest number will be the land lord, and the base score is the selected number.): ');
+    console.log('Deal cards complete, your seat number is-> ', data.serverSeat, 'your cards->', myHandCardsShowArr.join(','));
+    console.log('Select a score to confirm role (you can input 1|2|3, the one who select the biggest number will be the land lord, and the base score is the selected number.): ');
     const _score = getInputFromCmd();
     console.log(`${_score} score`);
     request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, data: { 'score': _score } });
@@ -64,13 +59,13 @@ function playCards_S2C(data) {
     let _cardsPlayed = data.cards;
     let _seatNumber = data.seatNumber;
     if (_cardsPlayed == "") {
-        console.log(`player ${_seatNumber}-> passed.`)
+        console.log(`Player ${_seatNumber}-> passed.`)
     } else {
-        console.log(`player ${_seatNumber}-> played ${_seatNumber}.`)
+        console.log(`Player ${_seatNumber}-> played ${_seatNumber}.`)
     }
 }
 function playNotAllowRule_S2C() {
-    console.log("cards are not allowed.")
+    console.log("Cards are not allowed.")
 }
 function gameEnd_S2C(data) {
     let _winnerSeatNumber = data.seatNumber;
@@ -88,6 +83,14 @@ function playCards_C2S() {
     console.log('Please input your cards to play (join with ",", press Enter to confirm):');
     let _cards = convert2CardNumbers(getInputFromCmd());
     request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cards, 'seatNumber': 0 } });
+}
+
+var _this = this;
+function decodeData(buffer) {
+    const _cmd = buffer.readInt16BE();
+    const _body = JSON.parse(buffer.slice(2));
+    const _funcName = ENUM_CMD_FN[_cmd];
+    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 
 //=============== define custom function below ==================
@@ -158,7 +161,7 @@ function convert2CardNumbers(cardNames) {
 
 function sortByValue(arr) {
     return arr.sort((a, b) => {
-        return getCardValue(a) - getCardValue(b)
+        return getCardValue(b) - getCardValue(a);
     })
 }
 
@@ -177,6 +180,8 @@ function getCardValue(cardSerialNumber) {
         _cardNumber = 0x0e;
     } else if (_cardNumberWithoutSuit == 0x02) {
         _cardNumber = 0x0f;
+    } else {
+        _cardNumber = _cardNumberWithoutSuit;
     }
     return _cardNumber;
 }
