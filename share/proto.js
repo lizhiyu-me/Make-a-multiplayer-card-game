@@ -10,8 +10,9 @@ function generateEnum(protoArr) {
 const ENUM_CMD_FN = generateEnum(
     [
         "ready_C2S",
-        "competeForLandLordRole_C2S",
         "dealCards_S2C",
+        "competeForLandLordRole_C2S",
+        "playTurn",
         "playCards_C2S",
         "playCards_S2C",
         "playNotAllowRule_S2C",

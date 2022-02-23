@@ -16,9 +16,9 @@ socket.on('error', (buffer) => {
 });
 
 var _this = this;
-function decodeData (buffer) {
-    const _cmd = buffer.readInt16BE();
-    const _body = JSON.parse(buffer.slice(2));
+function decodeData(buffer) {
+    const _cmd = buffer.readUInt8();
+    const _body = JSON.parse(buffer.slice(1));
     const _funcName = ENUM_CMD_FN[_cmd];
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
@@ -38,23 +38,22 @@ function startGame() {
 
 function encodeData(data) {
     const body = Buffer.from(JSON.stringify(data.body));
-    const header = Buffer.alloc(2);
-    header.writeUInt16BE(data.cmd);
+    const header = Buffer.alloc(1);
+    header.writeUInt8(data.cmd);
     const buffer = Buffer.concat([header, body]);
     return buffer;
 }
 
-//============== game process function below ==================
+//============== game logic below ==================
 let mCardsArr = [];
 this.dealCards_S2C = function (data) {
     let _cards = data.cards;
     mCardsArr = sortByValue(_cards);
-    myHandCardsShowArr = convert2ReadableNames(mCardsArr);
-    console.log('Deal cards complete, your seat number is-> ', data.serverSeat, 'your cards->', myHandCardsShowArr.join(','));
+    let _myHandCardsShowArr = convert2ReadableNames(mCardsArr);
+    console.log('Deal cards complete, your seat number is-> ', data.serverSeat, 'your cards->', _myHandCardsShowArr.join(','));
     console.log('Select a score to confirm role (you can input 1|2|3, the one who select the biggest number will be the land lord, and the base score is the selected number.): ');
     const _score = getInputFromCmd();
-    console.log(`${_score} score`);
-    request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, data: { 'score': _score } });
+    this.competeForLandLordRole_C2S(_score);
 }
 this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
@@ -75,18 +74,23 @@ this.gameEnd_S2C = function (data) {
     console.log(_content);
 }
 
-this.competeForLandLordRole_C2S = function () {
-
+this.competeForLandLordRole_C2S = function (score) {
+    console.log(`You has called ${score} score`);
+    request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, body: { 'score': score } });
+}
+this.playTurn = function (data) {
+    let _serverSeat = data.serverSeat;
+    if (_serverSeat == 0) this.playCards_C2S();
 }
 this.playCards_C2S = function () {
     console.log('Now, your turn.');
-    console.log('Your cards->', mCardsArr.join(','));
-    console.log('Please input your cards to play (join with ",", press Enter to confirm):');
+    console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
+    console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
     let _cards = convert2CardNumbers(getInputFromCmd());
     request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cards, 'seatNumber': 0 } });
 }
 
-//=============== define custom function below ==================
+//=============== data and custom function bellow ==================
 /**
  * * rJkr for redJoker
  * * bJkr for blackJoker
