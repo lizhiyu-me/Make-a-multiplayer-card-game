@@ -10,15 +10,15 @@ const server = net.createServer((socket) => {
 });
 var _this = this;
 function decodeData(data) {
-    let _cmd = data.readInt16BE();
-    let _body = JSON.parse(data.slice(2));
+    let _cmd = data.readUInt8();
+    let _body = JSON.parse(data.slice(1));
     const _funcName = ENUM_CMD_FN[_cmd];
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 
 function send(cmd, data) {
-    let _header = Buffer.alloc(2);
-    _header.writeInt16BE(cmd);
+    let _header = Buffer.alloc(1);
+    _header.writeUInt8(cmd);
     let _body = Buffer.from(JSON.stringify(data));
     const dataBuffer = Buffer.concat([_header, _body]);
     mSocket.write(dataBuffer);
@@ -32,7 +32,6 @@ server.listen(8080, () => {
 var playerCardsDic = {};
 var playerCount = 3;
 var initialCardCount = 17;
-var lordCardCount = 3;
 this.dealCards_S2C = function () {
     let _pokerPool = POKER_VALUES.slice().shuffle();
     for (let i = 0; i < playerCount; i++) {
@@ -49,6 +48,11 @@ this.dealCards_S2C = function () {
 }
 this.ready_C2S = function () {
     this.dealCards_S2C();
+}
+
+this.competeForLandLordRole_C2S = function(data){
+    let _score = data.score;
+    send(ENUM_CMD_FN.playTurn,{serverSeat:0});
 }
 //============== data and custom function bellow ==============
 Array.prototype.shuffle = function () {
