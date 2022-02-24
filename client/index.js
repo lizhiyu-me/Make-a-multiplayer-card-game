@@ -1,6 +1,7 @@
 const net = require('net');
 const readlineSync = require('readline-sync');
 const { ENUM_CMD_FN } = require('../share/proto');
+const { convert2ReadableNames,convert2CardNumbers } = require('../share/helper');
 
 const socket = new net.Socket();
 socket.connect({
@@ -50,7 +51,7 @@ this.dealCards_S2C = function (data) {
     let _cards = data.cards;
     mCardsArr = sortByValue(_cards);
     let _myHandCardsShowArr = convert2ReadableNames(mCardsArr);
-    console.log('Deal cards complete, your seat number is-> ', data.serverSeat, 'your cards->', _myHandCardsShowArr.join(','));
+    console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
     console.log('Select a score to confirm role (you can input 1|2|3, the one who select the biggest number will be the land lord, and the base score is the selected number.): ');
     const _score = getInputFromCmd();
     this.competeForLandLordRole_C2S(_score);
@@ -59,25 +60,21 @@ this.playCards_C2S = function () {
     console.log('Now, your turn.');
     console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
     console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
-    let _cardsStr = convert2CardNumbers(getInputFromCmd()).join(",");
-    request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cardsStr, 'seatNumber': 0 } });
+    let _cardsStr = convert2CardNumbers(getInputFromCmd().split(",")).join(",");
+    request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsStr, 'seatNumber': 0 } });
 }
 this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
     let _seatNumber = data.seatNumber;
-    if (_seatNumber == 0) {
-        //update hand cards
-        mCardsArr = data.handCards;
-    }
-    if (_cardsPlayed == "") {
+    if (_cardsPlayed.length == 0) {
         console.log(`Player ${_seatNumber}-> passed.`)
     } else {
         console.log(`Player ${_seatNumber}-> played ${convert2ReadableNames(_cardsPlayed).join(",")}.`);
     }
 }
-this.playNotAllowRule_S2C = function () {
-    console.log("Cards are not allowed.");
-    this.playTurn({ serverSeat: 0 });
+this.notAllowedByRule_S2C = function (data) {
+    console.log("Cards are not allowed by rule.");
+    this.playTurn({ seatNumber: 0, handCards: data.handCards });
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
@@ -88,79 +85,18 @@ this.gameEnd_S2C = function (data) {
 
 this.competeForLandLordRole_C2S = function (score) {
     console.log(`You has called ${score} score`);
-    request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, body: { 'score': score } });
+    request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, body: { 'score': score, seatNumber: 0 } });
 }
 this.playTurn = function (data) {
-    let _serverSeat = data.serverSeat;
-    if (_serverSeat == 0) this.playCards_C2S();
+    let _seatNumber = data.seatNumber;
+    if (_seatNumber == 0) {
+        //update hand cards
+        mCardsArr = sortByValue(data.handCards);
+        this.playCards_C2S();
+    }
 }
 
 //====== data and custom function bellow ======
-/**
- * * rJkr for redJoker
- * * bJkr for blackJoker
- */
-var cardNameNumberDic = {
-    'rJkr': 0x0e,
-    'bJkr': 0x0f,
-    'A': 0x01,
-    'K': 0x0d,
-    'Q': 0x0c,
-    'J': 0x0b,
-    '10': 0x0a,
-    '9': 0x09,
-    '8': 0x08,
-    '7': 0x07,
-    '6': 0x06,
-    '5': 0x05,
-    '4': 0x04,
-    '3': 0x03,
-    '2': 0x02
-}
-/**
- * * rJkr for redJoker
- * * bJkr for blackJoker
- */
-var cardNumberNameDic = {
-    0x0e: 'rJkr',
-    0x0f: 'bJkr',
-    0x01: 'A',
-    0x0d: 'K',
-    0x0c: 'Q',
-    0x0b: 'J',
-    0x0a: '10',
-    0x09: '9',
-    0x08: '8',
-    0x07: '7',
-    0x06: '6',
-    0x05: '5',
-    0x04: '4',
-    0x03: '3',
-    0x02: '2'
-}
-function getCardReadableName(cardNumber) {
-    let _cardNumber = Number(cardNumber);
-    let _value = _cardNumber % 0x10;
-    return cardNumberNameDic[_value];
-}
-
-function convert2ReadableNames(cardsArr) {
-    let _res = [];
-    for (let i = 0, len = cardsArr.length; i < len; i++) {
-        let _cardNumber = cardsArr[i];
-        _res.push(getCardReadableName(_cardNumber));
-    }
-    return _res;
-}
-function convert2CardNumbers(cardNames) {
-    let _res = [];
-    for (let i = 0, len = cardNames.length; i < len; i++) {
-        let _cardName = cardNames[i];
-        _res.push(cardNameNumberDic[_cardName]);
-    }
-    return _res;
-}
-
 function sortByValue(arr) {
     return arr.sort((a, b) => {
         return getCardValue(b) - getCardValue(a);

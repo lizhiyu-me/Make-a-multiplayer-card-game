@@ -15,7 +15,8 @@ const ENUM_CMD_FN = generateEnum(
         "playTurn",
         "playCards_C2S",
         "playCards_S2C",
-        "playNotAllowRule_S2C",
+        "notAllowedByRule_S2C",
+        "_S2C",
         "gameEnd_S2C"
     ]);
 

@@ -1,6 +1,7 @@
 const net = require('net');
 const { ENUM_CMD_FN } = require('../share/proto');
-const { RuleChecker} = require('../share/rule-checker');
+const { RuleChecker } = require('../share/rule-checker');
+const { convert2ReadableNames } = require('../share/helper');
 var mSocket;
 const server = net.createServer((socket) => {
     mSocket = socket;
@@ -41,7 +42,7 @@ this.dealCards_S2C = function () {
     //In single player mode, set the player landlord default.
     playerCardsDic[0] = playerCardsDic[0].concat(_lordCards);
     let data = {
-        serverSeat: 0,
+        seatNumber: 0,
         cards: playerCardsDic[0]
     }
     send(ENUM_CMD_FN.dealCards_S2C, data);
@@ -51,44 +52,54 @@ this.ready_C2S = function () {
 }
 this.competeForLandLordRole_C2S = function (data) {
     let _score = data.score;
-    send(ENUM_CMD_FN.playTurn, { serverSeat: 0 });
+    let _seatNumber = data.seatNumber;
+    send(ENUM_CMD_FN.playTurn, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
 }
 this.playCards_C2S = function (data) {
-    checkIsTrickEnd(0);
+    checkIsTrickEnd(data.seatNumber);
     let _cardsStr = data.cards;
+    let _seatNumber = data.seatNumber;
+    let _canPlay = false;
     if (_cardsStr === "") {//pass
-        this.playCards_S2C({ cards: "", seatNumber: 0 });
-        setTimeout(botPlayCards, 500, ...[preCardsArr, 1]);
+        _canPlay = true;
+        this.playCards_S2C({ cards: [], seatNumber: _seatNumber });
+        preCardsArr = [];
+        preCardsType = -1;
+        prePlayerSeat = _seatNumber;
     } else {
+        //check has cards
         let _cardsArr = _cardsStr.split(',').map(i => ~~i);
-        let _isCanPut = false;
+        if (!checkHasCards(_cardsStr.split(','), _seatNumber)) {
+            send(ENUM_CMD_FN.notAllowedByRule_S2C, { handCards: playerCardsDic[_seatNumber] });
+            return;
+        }
         let _curCardsType = -1;
         if (preCardsType === -1) {
             let _res = Object.keys(RuleChecker.CheckCardType(_cardsArr, -1));
             if (_res.length != 0) {
                 _curCardsType = ~~_res[0];
-                _isCanPut = true;
+                _canPlay = true;
             }
         } else {
             let _res = RuleChecker.CheckCard(_cardsArr, preCardsArr, preCardsType);
             if (_res['isOK']) {
-                _isCanPut = true;
+                _canPlay = true;
                 _curCardsType = ~~_res.cardsType[0];
             }
         }
-        if (_isCanPut) {
-            preCardsArr = _cardsArr.map(i => ~~i);
+        if (_canPlay) {
+            preCardsArr = _cardsArr;
             preCardsType = _curCardsType;
-            prePlayerSeat = 0;
-            let _curHandCards = removePlayerCards(preCardsArr, 0);
-            this.playCards_S2C({ cards: preCardsArr, seatNumber: 0, handCards: _curHandCards });
-            setTimeout(botPlayCards, 500, ...[preCardsArr, 1]);
+            prePlayerSeat = _seatNumber;
+            this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
-            send(ENUM_CMD_FN.playNotAllowRule_S2C, null);
+            send(ENUM_CMD_FN.notAllowedByRule_S2C, null);
         }
     }
+    if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
 }
 this.playCards_S2C = function (data) {
+    removePlayerCards(data.cards, data.seatNumber);
     send(ENUM_CMD_FN.playCards_S2C, data);
 }
 //====== data and custom function bellow ======
@@ -118,6 +129,21 @@ function removePlayerCards(playedCards, seatNumber) {
     }
     return _handCardsArr;
 }
+function checkHasCards(cardsArr, seatNumber) {
+    let _handCardsArr = playerCardsDic[seatNumber].slice();
+    _handCardsArr = convert2ReadableNames(_handCardsArr);
+    let _res = true;
+    for (let i = 0; i < cardsArr.length; i++) {
+        let item = cardsArr[i];
+        let _idx = _handCardsArr.indexOf(item);
+        if (_idx != -1) {
+            _handCardsArr.splice(_idx, 1);
+        } else {
+            _res = false;
+        }
+    }
+    return _res;
+}
 function resetWhenGameEnd() {
     preCardsArr.length = 0;
     preCardsType = -1;
@@ -126,23 +152,33 @@ function resetWhenGameEnd() {
 function botPlayCards(_preCardsArr, seatNumber) {
     checkIsTrickEnd(seatNumber);
     let _botCards = playerCardsDic[seatNumber];
-    let _botPlayCards;
+    let _botPlayCardArr;
     if (preCardsType === -1) {
-        _botPlayCards = _botCards[0];
-        preCardsArr = _botPlayCards;
-        send({ cards: [preCardsArr], seatNo: seatNumber, handCards: [] }, -1, 4, socket);
+        _botPlayCardArr = [_botCards[0]];
+        preCardsArr = _botPlayCardArr;
+        _this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
     } else {
-        _botPlayCards = RuleChecker.HelpCard(_botCards, _preCardsArr, preCardsType);
-        if (_botPlayCards.length != 0) {
-            preCardsArr = _botPlayCards;
-            preCardsType = ~~Object.keys(RuleChecker.CheckCardType(_botPlayCards, -1))[0];
+        _botPlayCardArr = RuleChecker.HelpCard(_botCards, _preCardsArr, preCardsType);
+        if (_botPlayCardArr.length != 0) {
+            preCardsArr = _botPlayCardArr;
+            preCardsType = ~~Object.keys(RuleChecker.CheckCardType(_botPlayCardArr, -1))[0];
             prePlayerSeat = seatNumber;
-            this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
+            _this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
         } else {
-            this.playCards_S2C({ cards: "", seatNumber: seatNumber });
+            _this.playCards_S2C({ cards: [], seatNumber: seatNumber });
         }
     }
-    setTimeout(botPlayCards, 500, ...[preCardsArr, ++seatNumber]);
+    setTimeout(() => {
+        let _turnSeatNumber = getNextPlayerSeatNumber(seatNumber);
+        send(ENUM_CMD_FN.playTurn, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+    }, 500);
+}
+function getNextPlayerSeatNumber(preSeatNumber) {
+    let _cur = preSeatNumber + 1;
+    if (_cur >= playerCount) {
+        _cur = _cur - playerCount;
+    }
+    return _cur;
 }
 Array.prototype.shuffle = function () {
     var input = this;
