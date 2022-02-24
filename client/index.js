@@ -44,7 +44,7 @@ function encodeData(data) {
     return buffer;
 }
 
-//============== game logic below ==================
+//====== game logic below ======
 let mCardsArr = [];
 this.dealCards_S2C = function (data) {
     let _cards = data.cards;
@@ -55,17 +55,29 @@ this.dealCards_S2C = function (data) {
     const _score = getInputFromCmd();
     this.competeForLandLordRole_C2S(_score);
 }
+this.playCards_C2S = function () {
+    console.log('Now, your turn.');
+    console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
+    console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
+    let _cardsStr = convert2CardNumbers(getInputFromCmd()).join(",");
+    request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cardsStr, 'seatNumber': 0 } });
+}
 this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
     let _seatNumber = data.seatNumber;
+    if (_seatNumber == 0) {
+        //update hand cards
+        mCardsArr = data.handCards;
+    }
     if (_cardsPlayed == "") {
         console.log(`Player ${_seatNumber}-> passed.`)
     } else {
-        console.log(`Player ${_seatNumber}-> played ${_seatNumber}.`)
+        console.log(`Player ${_seatNumber}-> played ${convert2ReadableNames(_cardsPlayed).join(",")}.`);
     }
 }
 this.playNotAllowRule_S2C = function () {
-    console.log("Cards are not allowed.")
+    console.log("Cards are not allowed.");
+    this.playTurn({ serverSeat: 0 });
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
@@ -82,15 +94,8 @@ this.playTurn = function (data) {
     let _serverSeat = data.serverSeat;
     if (_serverSeat == 0) this.playCards_C2S();
 }
-this.playCards_C2S = function () {
-    console.log('Now, your turn.');
-    console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
-    console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
-    let _cards = convert2CardNumbers(getInputFromCmd());
-    request({ cmd: ENUM_CMD_FN.playCards_C2S, data: { 'cards': _cards, 'seatNumber': 0 } });
-}
 
-//=============== data and custom function bellow ==================
+//====== data and custom function bellow ======
 /**
  * * rJkr for redJoker
  * * bJkr for blackJoker
