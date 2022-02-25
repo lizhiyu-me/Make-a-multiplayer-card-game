@@ -3,8 +3,9 @@
  * * bJkr for blackJoker
  */
 var cardNameNumberDic = {
-    'rJkr': 0x0e,
-    'bJkr': 0x0f,
+    'rJkr': 0x0f,
+    'bJkr': 0x0e,
+    '2': 0x02,
     'A': 0x01,
     'K': 0x0d,
     'Q': 0x0c,
@@ -16,16 +17,16 @@ var cardNameNumberDic = {
     '6': 0x06,
     '5': 0x05,
     '4': 0x04,
-    '3': 0x03,
-    '2': 0x02
+    '3': 0x03
 }
 /**
  * * rJkr for redJoker
  * * bJkr for blackJoker
  */
 var cardNumberNameDic = {
-    0x0e: 'rJkr',
-    0x0f: 'bJkr',
+    0x0f: 'rJkr',
+    0x0e: 'bJkr',
+    0x02: '2',
     0x01: 'A',
     0x0d: 'K',
     0x0c: 'Q',
@@ -37,8 +38,7 @@ var cardNumberNameDic = {
     0x06: '6',
     0x05: '5',
     0x04: '4',
-    0x03: '3',
-    0x02: '2'
+    0x03: '3'
 }
 function getCardReadableName(cardNumber) {
     let _cardNumber = Number(cardNumber);

@@ -60,8 +60,8 @@ this.playCards_C2S = function () {
     console.log('Now, your turn.');
     console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
     console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
-    let _cardsStr = convert2CardNumbers(getInputFromCmd().split(",")).join(",");
-    request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsStr, 'seatNumber': 0 } });
+    let _cardsNumberStr = convert2CardNumbers(getInputFromCmd().split(",")).join(",");
+    request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsNumberStr, 'seatNumber': 0 } });
 }
 this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
@@ -74,13 +74,17 @@ this.playCards_S2C = function (data) {
 }
 this.notAllowedByRule_S2C = function (data) {
     console.log("Cards are not allowed by rule.");
-    this.playTurn({ seatNumber: 0, handCards: data.handCards });
+    this.playTurn({ seatNumber: 0});
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
     let _isWin = _winnerSeatNumber === 0;
     let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
     console.log(_content);
+
+    console.log("Press Enter to restart.")
+    getInputFromCmd();
+    startGame();
 }
 
 this.competeForLandLordRole_C2S = function (score) {
@@ -91,7 +95,7 @@ this.playTurn = function (data) {
     let _seatNumber = data.seatNumber;
     if (_seatNumber == 0) {
         //update hand cards
-        mCardsArr = sortByValue(data.handCards);
+        if(data.handCards)mCardsArr = sortByValue(data.handCards);
         this.playCards_C2S();
     }
 }

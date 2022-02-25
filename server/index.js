@@ -1,7 +1,7 @@
 const net = require('net');
 const { ENUM_CMD_FN } = require('../share/proto');
 const { RuleChecker } = require('../share/rule-checker');
-const { convert2ReadableNames } = require('../share/helper');
+const { convert2ReadableNames, convert2CardNumbers } = require('../share/helper');
 var mSocket;
 const server = net.createServer((socket) => {
     mSocket = socket;
@@ -17,6 +17,7 @@ function decodeData(data) {
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 function send(cmd, data) {
+    if(!mIsGaming) return;
     let _header = Buffer.alloc(1);
     _header.writeUInt8(cmd);
     let _body = Buffer.from(JSON.stringify(data));
@@ -36,11 +37,18 @@ var lordCardsCount = 3;
 this.dealCards_S2C = function () {
     let _pokerPool = POKER_VALUES.slice().shuffle();
     for (let i = 0; i < playerCount; i++) {
-        playerCardsDic[i] = _pokerPool.slice(i * initialCardCount, (i + 1) * initialCardCount);
+        playerCardsDic[i] =
+            _pokerPool.slice(i * initialCardCount, (i + 1) * initialCardCount);
     }
     _lordCards = _pokerPool.slice(-lordCardsCount);
     //In single player mode, set the player landlord default.
     playerCardsDic[0] = playerCardsDic[0].concat(_lordCards);
+    for (const key in playerCardsDic) {
+        if (Object.hasOwnProperty.call(playerCardsDic, key)) {
+            const _originCards = playerCardsDic[key];
+            playerCardsDic[key] = _originCards.map(card => card % 0x10);
+        }
+    }
     let data = {
         seatNumber: 0,
         cards: playerCardsDic[0]
@@ -48,6 +56,7 @@ this.dealCards_S2C = function () {
     send(ENUM_CMD_FN.dealCards_S2C, data);
 }
 this.ready_C2S = function () {
+    mIsGaming = true;
     this.dealCards_S2C();
 }
 this.competeForLandLordRole_C2S = function (data) {
@@ -57,10 +66,10 @@ this.competeForLandLordRole_C2S = function (data) {
 }
 this.playCards_C2S = function (data) {
     checkIsTrickEnd(data.seatNumber);
-    let _cardsStr = data.cards;
+    let _cardsNumberStr = data.cards;
     let _seatNumber = data.seatNumber;
     let _canPlay = false;
-    if (_cardsStr === "") {//pass
+    if (_cardsNumberStr === "") {//pass
         _canPlay = true;
         this.playCards_S2C({ cards: [], seatNumber: _seatNumber });
         preCardsArr = [];
@@ -68,32 +77,34 @@ this.playCards_C2S = function (data) {
         prePlayerSeat = _seatNumber;
     } else {
         //check has cards
-        let _cardsArr = _cardsStr.split(',').map(i => ~~i);
-        if (!checkHasCards(_cardsStr.split(','), _seatNumber)) {
-            send(ENUM_CMD_FN.notAllowedByRule_S2C, { handCards: playerCardsDic[_seatNumber] });
+        let _cardsNumberArr = _cardsNumberStr.split(",").map(card => ~~card);
+        if (!checkHasCards(_cardsNumberArr, _seatNumber)) {
+            console.log("no cards to play");
+            send(ENUM_CMD_FN.notAllowedByRule_S2C, {});
             return;
         }
         let _curCardsType = -1;
         if (preCardsType === -1) {
-            let _res = Object.keys(RuleChecker.CheckCardType(_cardsArr, -1));
+            let _res = Object.keys(RuleChecker.CheckCardType(_cardsNumberArr, -1));
             if (_res.length != 0) {
                 _curCardsType = ~~_res[0];
                 _canPlay = true;
             }
         } else {
-            let _res = RuleChecker.CheckCard(_cardsArr, preCardsArr, preCardsType);
+            let _res = RuleChecker.CheckCard(_cardsNumberArr, preCardsArr, preCardsType);
             if (_res['isOK']) {
                 _canPlay = true;
                 _curCardsType = ~~_res.cardsType[0];
             }
         }
         if (_canPlay) {
-            preCardsArr = _cardsArr;
+            preCardsArr = _cardsNumberArr;
             preCardsType = _curCardsType;
             prePlayerSeat = _seatNumber;
             this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
-            send(ENUM_CMD_FN.notAllowedByRule_S2C, null);
+            console.log("can not play these cards");
+            send(ENUM_CMD_FN.notAllowedByRule_S2C, {});
         }
     }
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
@@ -119,9 +130,7 @@ function removePlayerCards(playedCards, seatNumber) {
     for (let i = 0; i < playedCards.length; i++) {
         let item = playedCards[i];
         let _idx = _handCardsArr.indexOf(item);
-        if (_idx != -1) {
-            _handCardsArr.splice(_idx, 1);
-        }
+        _handCardsArr.splice(_idx, 1);
     }
     if (_handCardsArr.length === 0) {
         send(ENUM_CMD_FN.gameEnd_S2C, { seatNumber: seatNumber });
@@ -129,12 +138,11 @@ function removePlayerCards(playedCards, seatNumber) {
     }
     return _handCardsArr;
 }
-function checkHasCards(cardsArr, seatNumber) {
+function checkHasCards(cardsNumberArr, seatNumber) {
     let _handCardsArr = playerCardsDic[seatNumber].slice();
-    _handCardsArr = convert2ReadableNames(_handCardsArr);
     let _res = true;
-    for (let i = 0; i < cardsArr.length; i++) {
-        let item = cardsArr[i];
+    for (let i = 0; i < cardsNumberArr.length; i++) {
+        let item = cardsNumberArr[i];
         let _idx = _handCardsArr.indexOf(item);
         if (_idx != -1) {
             _handCardsArr.splice(_idx, 1);
@@ -144,7 +152,9 @@ function checkHasCards(cardsArr, seatNumber) {
     }
     return _res;
 }
+var mIsGaming = false;
 function resetWhenGameEnd() {
+    mIsGaming = false;
     preCardsArr.length = 0;
     preCardsType = -1;
     isTrickEnd = true;
