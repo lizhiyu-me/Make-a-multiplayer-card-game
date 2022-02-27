@@ -10,18 +10,22 @@ const server = net.createServer((socket) => {
 });
 var _this = this;
 function decodeData(data) {
-    let _cmd = data.readUInt8();
+    let _cmdID = data.readUInt8();
     let _body = JSON.parse(data.slice(1));
-    const _funcName = ENUM_CMD_FN[_cmd];
+    const _funcName = ENUM_CMD_FN[_cmdID];
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 function send(cmd, data) {
     if(!mIsGaming) return;
+    const _dataBuffer = encodeData(cmd, data);
+    mSocket.write(_dataBuffer);
+}
+function encodeData(cmd, data){
     let _header = Buffer.alloc(1);
     _header.writeUInt8(cmd);
     let _body = Buffer.from(JSON.stringify(data));
-    const dataBuffer = Buffer.concat([_header, _body]);
-    mSocket.write(dataBuffer);
+    const _dataBuffer = Buffer.concat([_header, _body]);
+    return _dataBuffer;
 }
 var port = 8080;
 server.listen(port, () => {
