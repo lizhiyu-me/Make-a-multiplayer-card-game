@@ -59,7 +59,7 @@ this.dealCards_S2C = function (data) {
 this.playCards_C2S = function () {
     console.log('Now, your turn.');
     console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
-    console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm):');
+    console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm your input, input nothing to pass this turn):');
     let _cardsNumberStr = convert2CardNumbers(getInputFromCmd().split(",")).join(",");
     request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsNumberStr, 'seatNumber': 0 } });
 }

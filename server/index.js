@@ -1,7 +1,6 @@
 const net = require('net');
 const { ENUM_CMD_FN } = require('../share/proto');
 const { RuleChecker } = require('../share/rule-checker');
-const { convert2ReadableNames, convert2CardNumbers } = require('../share/helper');
 var mSocket;
 const server = net.createServer((socket) => {
     mSocket = socket;
@@ -31,7 +30,7 @@ server.listen(port, () => {
 
 //====== game logic bellow ======
 var playerCardsDic = {};
-var playerCount = 2;
+var playerCount = 3;
 var initialCardCount = 17;
 var lordCardsCount = 3;
 this.dealCards_S2C = function () {
@@ -166,6 +165,7 @@ function botPlayCards(_preCardsArr, seatNumber) {
     if (preCardsType === -1) {
         _botPlayCardArr = [_botCards[0]];
         preCardsArr = _botPlayCardArr;
+        preCardsType = 1;
         _this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
     } else {
         _botPlayCardArr = RuleChecker.HelpCard(_botCards, _preCardsArr, preCardsType);
@@ -180,7 +180,10 @@ function botPlayCards(_preCardsArr, seatNumber) {
     }
     setTimeout(() => {
         let _turnSeatNumber = getNextPlayerSeatNumber(seatNumber);
-        send(ENUM_CMD_FN.playTurn, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+        if(_turnSeatNumber == 0)send(ENUM_CMD_FN.playTurn, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+        else{
+            botPlayCards(preCardsArr,_turnSeatNumber);
+        }
     }, 500);
 }
 function getNextPlayerSeatNumber(preSeatNumber) {

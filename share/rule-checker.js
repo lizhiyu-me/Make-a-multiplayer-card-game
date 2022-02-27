@@ -1,10 +1,3 @@
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 var RuleChecker = /** @class */ (function () {
     function RuleChecker() {
     }
@@ -28,46 +21,27 @@ var RuleChecker = /** @class */ (function () {
         }
         return resNum;
     };
-    /**
-     * 检测选牌是否可出（是否合法牌型，是否大于上家出牌）
-     ** cardListArr 当前玩家的手牌数组
-     ** pcardListArr 上一次帮助选择出来的牌
-     ** cardsType 上一次(上家)的出牌类型
-     ** handCardsCount 当前手牌数量
-     * @returns 牌的数组
-     * */
     RuleChecker.CheckCard = function (cardListArr, pcardListArr, cardsType, handCardsCount) {
-        // stf.DdzUtils.showLog("进入牌型检测函数：---cardListArr----", cardListArr, "pcardListArr-----", pcardListArr, "cardsType--------", cardsType);
         var result = { isOK: false, cardsType: [] };
-        //检测牌型
         var mcardsTypeObj = RuleChecker.CheckCardType(cardListArr, cardsType);
-        // stf.DdzUtils.showLog("牌型检测结果----", mcardsTypeObj);
         var cardsTypeArr = Object.keys(mcardsTypeObj);
         cardsTypeArr = this.getNumberArray(cardsTypeArr.join(","));
         if (cardsTypeArr.length == 0)
             return result;
-        // stf.DdzUtils.showLog("cardsTypeArr---", cardsTypeArr);
-        var mcardsType = cardsTypeArr[0]; //牌型唯一
-        //火箭
+        var mcardsType = cardsTypeArr[0]; 
         if (mcardsType == CardType.CT_MISSILE_CARD || (mcardsType == CardType.CT_BOMB_CARD && cardsType < CardType.CT_BOMB_CARD)) {
             result["isOK"] = true;
             result["cardsType"] = [mcardsType];
             return result;
         }
-        // else if(mcardsType == CardType.CT_BOMB_CARD && cardsType< CardType.CT_BOMB_CARD){
-        // }
         if (cardsType == mcardsType || cardsType == -1) {
             if (cardsType == -1 || RuleChecker.isCardGreater(cardListArr, pcardListArr, cardsType)) {
-                // stf.DdzUtils.showLog("主动出牌或相同牌型进行比较---cardListArr----", cardListArr, "pcardListArr----", pcardListArr, "cardsType----", cardsType);
                 result["isOK"] = true;
                 result["cardsType"] = [mcardsType];
             }
         }
         return result;
     };
-    /**
-     * 对应的数量的值的下标
-     */
     RuleChecker.countIndexForValueList = function (valueList, Count) {
         var index = -1;
         var itemList;
@@ -117,21 +91,15 @@ var RuleChecker = /** @class */ (function () {
         }
         return false;
     };
-    /**检测牌型
-     * @param cardsType -1 时为本家主动出牌
-     */
     RuleChecker.CheckCardType = function (cardList1, cardsType) {
-        var cardList = __spreadArrays(cardList1);
+        var cardList = cardList1.slice();
         var resObj = {};
         var tempRes = {};
-        var valueList = RuleChecker.getCardValueArray(cardList);
-        if (RuleChecker.isRocket(cardList)) { //火箭
-            // stf.DdzUtils.showLog("火箭成功");
+        if (RuleChecker.isRocket(cardList)) { 
             resObj[CardType.CT_MISSILE_CARD] = true;
             return resObj;
         }
-        if (RuleChecker.isBomb(cardList)) { //炸弹
-            // stf.DdzUtils.showLog("炸弹成功");
+        if (RuleChecker.isBomb(cardList)) { 
             resObj[CardType.CT_BOMB_CARD] = true;
             return resObj;
         }
@@ -209,12 +177,6 @@ var RuleChecker = /** @class */ (function () {
                 resObj[CardType.CT_THREE_LINE] = { speSerialArr: tempRes["speSerialArr"], typeName: "飞机带对" };
             }
         }
-        // if (cardsType == CardType.DealCardType_SI_FEI_JI_DAI_ER || cardsType == -1) {
-        //     tempRes = RuleChecker.isFour_Order_TwoSingle(cardList);
-        //     if (tempRes["isOK"]) {
-        //         resObj[CardType.DealCardType_SI_FEI_JI_DAI_ER] = { speSerialArr: tempRes["speSerialArr"], typeName: "四带两单" };
-        //     }
-        // }
         return resObj;
     };
     RuleChecker.isSingle = function (cardList) {
@@ -246,7 +208,6 @@ var RuleChecker = /** @class */ (function () {
         if (cardList.length < 5)
             return resObj;
         var valueArrObj = RuleChecker.getCardValueArray(cardList);
-        var objKeysArr = Object.keys(valueArrObj);
         var count = RuleChecker.getValueOrderCount(valueArrObj, 1);
         if (count >= 5 && count == cardList.length)
             resObj["isOK"] = true;
@@ -275,7 +236,6 @@ var RuleChecker = /** @class */ (function () {
         resObj["speSerialArr"] = [];
         if (cardList.length >= 6 && cardList.length % 3 == 0) {
             var valueArrObj = RuleChecker.getCardValueArray(cardList);
-            var objKeysArr = Object.keys(valueArrObj);
             var count = RuleChecker.getValueOrderCount(valueArrObj, 3);
             if (count == cardList.length / 3)
                 resObj["isOK"] = true;
@@ -291,9 +251,7 @@ var RuleChecker = /** @class */ (function () {
         var len = cardList.length;
         if (cardList.length >= 8 && cardList.length % 4 == 0) {
             var valueArrObj = RuleChecker.getCardValueArray(cardList);
-            var objKeysArr = Object.keys(valueArrObj);
             var count = RuleChecker.getValueOrderCount(valueArrObj, 3);
-            // if (count * 4 == len) {
             if (count * 4 == len && RuleChecker.findBomb(cardList, valueArrObj).length == 0) {
                 resObj["isOK"] = true;
             }
@@ -313,31 +271,20 @@ var RuleChecker = /** @class */ (function () {
         var resObj = {};
         resObj["isOK"] = false;
         resObj["speSerialArr"] = [];
-        var len = cardList.length;
         if (cardList.length >= 10 && cardList.length % 5 == 0) {
             var valueArrObj = RuleChecker.getCardValueArray(cardList);
-            var objKeysArr = Object.keys(valueArrObj);
-            // if (!this.hasnoOtherCountValue(valueArrObj, 3, 2, CardType.CT_THREE_LINE)) return resObj;
-            // let count = RuleChecker.getValueOrderCount(valueArrObj, 3);
-            //======== 三飞带对可带炸弹 begin ===============
             var _threeCount = 0;
             var _twoCount = 0;
-            // let _bombCount: number = 0;
             for (var i in valueArrObj) {
                 var _item = valueArrObj[i];
                 var _len = _item.length;
-                // if (_len === 4)++_bombCount;
-                // else 
                 if (_len === 3)
                     ++_threeCount;
                 else if (_len === 2)
                     ++_twoCount;
             }
-            // if (_bombCount * 2 === _threeCount) resObj["isOK"] = true;
-            // else 
             if (_twoCount === _threeCount && _threeCount != 0)
                 resObj["isOK"] = true;
-            //======== 三飞带对可带炸弹 end ===============
         }
         if (!resObj["isOK"] && resObj["speSerialArr"].length != 0)
             resObj["isOK"] = true;
@@ -350,7 +297,6 @@ var RuleChecker = /** @class */ (function () {
         var len = cardList.length;
         if (cardList.length >= 12 && cardList.length % 6 == 0) {
             var valueArrObj = RuleChecker.getCardValueArray(cardList);
-            var objKeysArr = Object.keys(valueArrObj);
             var count = RuleChecker.getValueOrderCount(valueArrObj, 4);
             if (count * 6 == len) {
                 resObj["isOK"] = true;
@@ -439,12 +385,11 @@ var RuleChecker = /** @class */ (function () {
         var resObj = {};
         resObj["isOK"] = false;
         resObj["speSerialArr"] = [];
-        // if (cardList.length != 6 || RuleChecker.hasSpecialCard(cardList) > 1) {
         if (cardList.length != 6) {
             return false;
         }
-        var cardList1 = new Array();
-        cardList1 = __spreadArrays(cardList);
+        var cardList1 = [];
+        cardList1 = cardList.slice();
         var valueList = RuleChecker.getCardValueArray(cardList1);
         if (RuleChecker.getValueMax(valueList, 4)) {
             for (var i in valueList) {
@@ -454,13 +399,13 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
             var arrArr = this.getArrArr(valueList);
-            if (arrArr.length == 1 && arrArr[0].length == 2) { //带对子
+            if (arrArr.length == 1 && arrArr[0].length == 2) { 
                 var value = RuleChecker.getCardValue(arrArr[0][0]);
                 if (value != 16 && value != 17) {
                     resObj["isOK"] = true;
                 }
             }
-            else if (arrArr.length == 2) { //带两单
+            else if (arrArr.length == 2) { 
                 resObj["isOK"] = true;
             }
         }
@@ -473,20 +418,9 @@ var RuleChecker = /** @class */ (function () {
             return resObj;
         }
         var valueList;
-        var cardList1 = new Array();
-        cardList1 = __spreadArrays(cardList);
+        var cardList1 = [];
+        cardList1 = cardList.slice();
         valueList = RuleChecker.getCardValueArray(cardList1);
-        //======== 两个炸弹也能出 begin ===========
-        /*  let _isTwoBomb: boolean = true;
-         for (let key in valueList) {
-             let _item = valueList[key];
-             if (_item.length != 4) _isTwoBomb = false;
-         }
-         if (_isTwoBomb) {
-             resObj["isOK"] = true;
-             return resObj
-         } */
-        //======== 两个炸弹也能出 end ===========
         if (RuleChecker.getValueMax(valueList, 4)) {
             for (var i in valueList) {
                 if (valueList[i].length == 4) {
@@ -504,7 +438,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resObj;
     };
-    /**获取cardList<serialNo> */
     RuleChecker.getCardListFromValueArrObj = function (valueArrObj) {
         var resArr = [];
         for (var i in valueArrObj) {
@@ -512,9 +445,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**
-     * 获取对应数量的牌的数组的数组
-     */
     RuleChecker.getArrayofNum = function (valueList, cardNum) {
         var resArr = [];
         for (var item in valueList) {
@@ -542,11 +472,8 @@ var RuleChecker = /** @class */ (function () {
         }
         return res;
     };
-    /**
-     * 获取对应数量的值的key值的数组
-     */
     RuleChecker.getIndexArrayOfNum = function (valueList, cardNum) {
-        var indexArr = new Array();
+        var indexArr = [];
         for (var i in valueList) {
             if (valueList[i].length == cardNum) {
                 indexArr.push(i);
@@ -554,12 +481,9 @@ var RuleChecker = /** @class */ (function () {
         }
         return indexArr;
     };
-    /**
-     * 获取非空valueList，并取值的数组
-     */
     RuleChecker.getPureValueArr = function (valueList) {
-        var arrValueList = new Array();
-        var arrPureValueList = new Array();
+        var arrValueList = [];
+        var arrPureValueList = [];
         for (var i in valueList) {
             if (valueList[i] != null) {
                 arrValueList.push(valueList[i]);
@@ -570,7 +494,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return arrPureValueList;
     };
-    /**获取对应数量的牌的最大值*/
     RuleChecker.getCardMaxValue = function (cardList, cardNum) {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var maxValue = 99;
@@ -584,7 +507,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return maxValue;
     };
-    /**获取对应数量的牌的最大值的serialNo*/
     RuleChecker.getCardMaxSerialNo = function (cardList, cardNum) {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var maxSerialNo = 999;
@@ -592,7 +514,6 @@ var RuleChecker = /** @class */ (function () {
             var itemList = valueList[i];
             if (itemList != null && itemList.length == cardNum) {
                 if (itemList[0] > maxSerialNo || maxSerialNo == 999) {
-                    // maxSerialNo = this.getCardValue(itemList[0]);
                     maxSerialNo = itemList[0];
                 }
             }
@@ -625,9 +546,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return maxFlags && minFlags;
     };
-    /**
-     * 检测是否包含对应长度的同值牌
-     *  */
     RuleChecker.getValueMax = function (valueList, maxNum) {
         for (var i in valueList) {
             var itemList = valueList[i];
@@ -637,7 +555,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return false;
     };
-    /**从选牌中提出顺子 */
     RuleChecker.getOrderFromSelected = function (serialArr) {
         var resArr = [];
         var valueObj = RuleChecker.getCardValueArray(serialArr);
@@ -664,7 +581,6 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
         }
-        //排除2和王
         for (var i = 0, len = orderValueArr.length; i < len; i++) {
             if (orderValueArr[i] >= 16 || orderValueArr[i] == 15) {
                 orderValueArr.splice(i, 1);
@@ -678,7 +594,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**连牌数量 */
     RuleChecker.getValueOrderCount = function (valueList, cardNum) {
         var count = 0;
         var oldCardValue = 0;
@@ -696,21 +611,17 @@ var RuleChecker = /** @class */ (function () {
                         oldCardValue = Number(i);
                         count++;
                     }
-                    // 三（四）飞机带三张（两对）不带癞子牌的飞机带单判断
                     else if (count == 1) {
                         oldCardValue = Number(i);
-                        // count = 1;
                     }
                     else {
                         break;
                     }
-                    //
                 }
             }
         }
         return count;
     };
-    /**已确定牌型后，飞机主牌值确定 */
     RuleChecker.getMainValueOfPlane = function (cardList, cardNum) {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var count = 0;
@@ -729,21 +640,17 @@ var RuleChecker = /** @class */ (function () {
                         oldCardValue = Number(i);
                         count++;
                     }
-                    // 三（四）飞机带三张（两对）不带癞子牌的飞机带单判断
                     else if (count == 1) {
                         oldCardValue = Number(i);
-                        // count = 1;
                     }
                     else {
                         break;
                     }
-                    //
                 }
             }
         }
         return oldCardValue;
     };
-    //牌组转换成字符串
     RuleChecker.getStrbyCardsList = function (cardList) {
         var resStr = "";
         if (cardList.length != 0) {
@@ -757,7 +664,6 @@ var RuleChecker = /** @class */ (function () {
         var res = resStr.slice(0, resStr.length - 1);
         return res;
     };
-    /**获取value对应的serialNo数组 */
     RuleChecker.getCardValueArray = function (cardList) {
         var res = {};
         cardList.forEach(function (item) {
@@ -773,12 +679,9 @@ var RuleChecker = /** @class */ (function () {
         });
         return res;
     };
-    /**深拷贝对象 */
     RuleChecker.getCopyObj = function (obj1, obj2) {
         if (obj2 === void 0) { obj2 = {}; }
-        // let keysArr = Object.keys(obj1);
         for (var objItem in obj1) {
-            // if(obj1.hasOwnProperty(objItem)){
             if (typeof obj1[objItem] === "object") {
                 obj2[objItem] = (obj1[objItem].constructor === Array) ? [] : {};
                 if (obj1[objItem])
@@ -787,7 +690,6 @@ var RuleChecker = /** @class */ (function () {
             else {
                 obj2[objItem] = obj1[objItem];
             }
-            // };
         }
         return obj2;
     };
@@ -803,7 +705,6 @@ var RuleChecker = /** @class */ (function () {
                 delete valueArr[i];
             }
         }
-        // resArr = resArr.sort((a, b) => { return b - a });
         for (var i in valueArr) {
             var len = valueArr[i].length;
             for (var j = 0; j < len; j++) {
@@ -822,40 +723,31 @@ var RuleChecker = /** @class */ (function () {
         });
         return res;
     };
-    /**order牌型排序*/
     RuleChecker.getNormalOrder = function (cardList) {
         var valueListForRes = RuleChecker.getCardValueArray(cardList);
-        var resArr = new Array();
-        var resArr1 = new Array();
-        var resArr2 = new Array();
+        var resArr = [];
+        var resArr1 = [];
+        var resArr2 = [];
         for (var i in valueListForRes) {
             if (valueListForRes[i].length >= 3) {
                 if (resArr1.length == 0) {
-                    // resArr1 = RuleChecker.getStrbyCardsList(valueListForRes[i]).split(",");
                     resArr1 = valueListForRes[i];
                 }
                 else {
-                    // let tempArr: Array<number> = RuleChecker.getStrbyCardsList(valueListForRes[i]).split(",")
                     var tempArr = valueListForRes[i];
                     resArr1 = resArr1.concat(tempArr);
                 }
             }
             else {
                 if (resArr2.length == 0) {
-                    // resArr2 = RuleChecker.getStrbyCardsList(valueListForRes[i]).split(",");
                     resArr2 = valueListForRes[i];
                 }
                 else {
-                    // let tempArr: Array<number> = RuleChecker.getStrbyCardsList(valueListForRes[i]).split(",")
                     var tempArr = valueListForRes[i];
                     resArr2 = resArr2.concat(tempArr);
                 }
             }
         }
-        /* if (resArr1.length == 2 && resArr2.length == 4) {
-             resArr = resArr2.concat(resArr1);
-             return resArr;
-         }*/
         resArr = resArr1.concat(resArr2);
         return resArr;
     };
@@ -863,11 +755,11 @@ var RuleChecker = /** @class */ (function () {
         if (cardNum === void 0) { cardNum = 3; }
         var count = 0;
         var oldCardValue = 0;
-        var valueListRes = new Array();
+        var valueListRes = [];
         for (var i in valueList) {
             if (valueList[i] != null) {
                 var itemList = valueList[i];
-                if (itemList != null && itemList.length >= cardNum) { //炸弹可做飞机
+                if (itemList != null && itemList.length >= cardNum) { 
                     valueListRes.push(itemList.slice(0, cardNum));
                 }
             }
@@ -895,11 +787,10 @@ var RuleChecker = /** @class */ (function () {
     };
     RuleChecker.shiftNeedlessCardsForPureThree = function (valueList, cardNum) {
         if (cardNum === void 0) { cardNum = 3; }
-        var valueListRes = new Array();
+        var valueListRes = [];
         for (var i in valueList) {
             if (valueList[i] != null) {
                 var itemList = valueList[i];
-                // if (itemList != null && itemList.length >= cardNum) {//炸弹可做飞机
                 if (itemList != null && itemList.length >= cardNum) {
                     valueListRes = itemList.slice(0, cardNum);
                 }
@@ -909,11 +800,10 @@ var RuleChecker = /** @class */ (function () {
     };
     RuleChecker.shiftNeedlessCardsForPureFour = function (valueList, cardNum) {
         if (cardNum === void 0) { cardNum = 4; }
-        var valueListRes = new Array();
+        var valueListRes = [];
         for (var i in valueList) {
             if (valueList[i] != null) {
                 var itemList = valueList[i];
-                // if (itemList != null && itemList.length >= cardNum) {//炸弹可做飞机
                 if (itemList != null && itemList.length >= cardNum) {
                     valueListRes = itemList.slice(0, cardNum);
                 }
@@ -921,7 +811,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return valueListRes;
     };
-    /**带牌类型去带牌 */
     RuleChecker.getAllWithTypePureArr = function (cardsArr, type) {
         var valueList = RuleChecker.getCardValueArray(cardsArr);
         var resArr = [];
@@ -937,13 +826,9 @@ var RuleChecker = /** @class */ (function () {
             case CardType.CT_THREE_LINE:
                 resArr = RuleChecker.shiftNeedlessCardsForPureThreeFly(valueList);
                 break;
-            // case CardType.DealCardType_SI_FEI_JI_DAI_ER:
-            //     resArr = RuleChecker.shiftNeedlessCardsForPureThreeFly(valueList, 4);
-            //     break;
         }
         return resArr;
     };
-    /**将字符串数组转换成数字数组 */
     RuleChecker.getNumberArray = function (str) {
         var resArr = [];
         if (str == "")
@@ -954,7 +839,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**get valueArr 对象中数组个数*/
     RuleChecker.getArrCount = function (arrObj) {
         var resNum = 0;
         for (var i in arrObj) {
@@ -962,7 +846,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resNum;
     };
-    /**get valueArr 对象中数组的数组*/
     RuleChecker.getArrArr = function (arrObj) {
         var resArr = [];
         for (var i in arrObj) {
@@ -970,7 +853,6 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**是否包含大小王 */
     RuleChecker.hasJoker = function (cardList) {
         for (var i = 0; i < cardList.length; i++) {
             if (RuleChecker.getCardValue(cardList[0]) >= 16)
@@ -978,20 +860,12 @@ var RuleChecker = /** @class */ (function () {
         }
         return false;
     };
-    /**
-    * 提示选择出牌
-    * @returns 牌的数组
-    * @param cardList 当前玩家的手牌数组
-    * @param pcardList 上一次帮助选择出来的牌
-    * @param cardsType 上一次(上家)的出牌类型
-    * @param preCardList 上家的出牌
-    */
     RuleChecker.HelpCard = function (cardList, pcardList, cardsType) {
         if (!pcardList || pcardList.length == 0) {
             return [];
         }
-        var cardListAr = __spreadArrays(cardList);
-        var pcardListAr = __spreadArrays(pcardList);
+        var cardListAr = cardList.slice();
+        var pcardListAr = pcardList.slice();
         var valueArr = this.getCardValueArray(cardListAr);
         var valueArr1 = this.getCopyObj(valueArr);
         var resultList = [];
@@ -1062,7 +936,7 @@ var RuleChecker = /** @class */ (function () {
         return resultList;
     };
     RuleChecker.findBiggerBomb = function (cardList, valueList, pcardList) {
-        var result = new Array();
+        var result = [];
         var cardNum = 4;
         var value = RuleChecker.getCardMinValue(pcardList, cardNum);
         for (var i in valueList) {
@@ -1079,12 +953,11 @@ var RuleChecker = /** @class */ (function () {
         }
         return result;
     };
-    /**查找炸弹 */
     RuleChecker.findBomb = function (cardList, valueList) {
-        var result = new Array();
+        var result = [];
         var valueList1 = RuleChecker.getCopyObj(valueList);
         var cardNum = 4;
-        var cardList1 = new Array();
+        var cardList1 = [];
         cardList1 = cardList1.concat(cardList);
         for (var i in valueList1) {
             if (valueList1[i] != null) {
@@ -1098,9 +971,9 @@ var RuleChecker = /** @class */ (function () {
         return result;
     };
     RuleChecker.findRocket = function (cardList, valueList) {
-        var result = new Array();
+        var result = [];
         var valueList1 = RuleChecker.getCopyObj(valueList);
-        var cardList1 = new Array();
+        var cardList1 = [];
         cardList1 = cardList1.concat(cardList);
         for (var i in valueList1) {
             if (valueList1[i] != null) {
@@ -1109,7 +982,6 @@ var RuleChecker = /** @class */ (function () {
                     result.push(itemList[0]);
                     if (result.length == 2)
                         break;
-                    // break;
                 }
             }
         }
@@ -1117,15 +989,14 @@ var RuleChecker = /** @class */ (function () {
             return [];
         return result;
     };
-    /**查找四带二 */
     RuleChecker.findFour_Pair = function (cardList, valueList, pcardList) {
-        var result = new Array();
+        var result = [];
         if (cardList.length < 6) {
             return result;
         }
         var value = RuleChecker.getCardMinValue(pcardList, 4);
-        var cardList1 = __spreadArrays(cardList);
-        var valueList1 = new Object();
+        var cardList1 = cardList.slice();
+        var valueList1 = {};
         valueList1 = RuleChecker.getCardValueArray(cardList1);
         for (var i in valueList1) {
             var itemList = valueList1[i];
@@ -1137,14 +1008,13 @@ var RuleChecker = /** @class */ (function () {
             }
         }
         if (result.length >= 4) {
-            var indexArr = new Array();
+            var indexArr = [];
             for (var i = 1; i < 4; i++) {
                 indexArr.push(RuleChecker.getIndexArrayOfNum(valueList1, i));
             }
             for (var i = 0; i < indexArr.length; i++) {
                 var numIndexArr = indexArr[i];
                 if (numIndexArr.length != 0) {
-                    //优先从数量最少的牌值中抽取作为带牌
                     for (var j = 0; j < numIndexArr.length; j++) {
                         for (var k = 0; k < valueList1[numIndexArr[j]].length; k++) {
                             if (valueList1[numIndexArr[j]][k] <= 0x4f) {
@@ -1162,15 +1032,14 @@ var RuleChecker = /** @class */ (function () {
         }
         return [];
     };
-    /**查找四带两对 */
     RuleChecker.findFour_Two_Pair = function (cardList, valueList, pcardList) {
-        var result = new Array();
+        var result = [];
         if (cardList.length < 8) {
             return result;
         }
         var value = RuleChecker.getCardMinValue(pcardList, 4);
-        var cardList1 = __spreadArrays(cardList);
-        var valueList1 = new Object();
+        var cardList1 = cardList.slice();
+        var valueList1 = {};
         valueList1 = RuleChecker.getCardValueArray(cardList1);
         for (var i in valueList1) {
             var itemList = valueList1[i];
@@ -1182,14 +1051,11 @@ var RuleChecker = /** @class */ (function () {
             }
         }
         if (result.length >= 4) {
-            var indexArr = new Array();
-            // for (let i = 1; i < 4; i++) {
+            var indexArr = [];
             indexArr.push(RuleChecker.getIndexArrayOfNum(valueList1, 2));
-            // }
             for (var i = 0; i < indexArr.length; i++) {
                 var numIndexArr = indexArr[i];
                 if (numIndexArr.length != 0) {
-                    //优先从数量最少的牌值中抽取作为带牌
                     for (var j = 0; j < numIndexArr.length; j++) {
                         for (var k = 0; k < valueList1[numIndexArr[j]].length; k++) {
                             if (valueList1[numIndexArr[j]][k] <= 0x4f) {
@@ -1208,13 +1074,12 @@ var RuleChecker = /** @class */ (function () {
         return [];
     };
     RuleChecker.findThree_Pair = function (cardList1, valueList1, pcardList) {
-        var cardList = __spreadArrays(cardList1);
         var valueList = RuleChecker.getCopyObj(valueList1);
         if (RuleChecker.getValueCount(valueList, 3) == 0 && RuleChecker.getValueCount(valueList, 4) == 0) {
             return [];
         }
-        var result = new Array();
-        var value = RuleChecker.getCardMinValue(pcardList, 3); //上家牌大小
+        var result = [];
+        var value = RuleChecker.getCardMinValue(pcardList, 3);
         var myValue = -1;
         var numOrderArr = RuleChecker.getNumOrderArr(valueList, 3);
         for (var i = 0; i < numOrderArr.length; i++) {
@@ -1227,7 +1092,6 @@ var RuleChecker = /** @class */ (function () {
                     if (myValue > value) {
                         result = result.concat(itemList.splice(0, 3));
                         delete valueList[item];
-                        // result = result.concat(itemList.slice(0, 3));
                         break;
                     }
                 }
@@ -1254,13 +1118,12 @@ var RuleChecker = /** @class */ (function () {
         return [];
     };
     RuleChecker.findThreeOne = function (cardList1, valueList1, pcardList) {
-        var cardList = __spreadArrays(cardList1);
         var valueList = RuleChecker.getCopyObj(valueList1);
         if (RuleChecker.getValueCount(valueList, 3) == 0 && RuleChecker.getValueCount(valueList, 4) == 0) {
             return [];
         }
-        var result = new Array();
-        var value = RuleChecker.getCardMinValue(pcardList, 3); //上家牌大小
+        var result = [];
+        var value = RuleChecker.getCardMinValue(pcardList, 3); 
         var myValue = -1;
         var numOrderArr = RuleChecker.getNumOrderArr(valueList, 3);
         for (var i = 0; i < numOrderArr.length; i++) {
@@ -1273,7 +1136,6 @@ var RuleChecker = /** @class */ (function () {
                     if (myValue > value) {
                         result = result.concat(itemList.splice(0, 3));
                         delete valueList[item];
-                        // result = result.concat(itemList.slice(0, 3));
                         break;
                     }
                 }
@@ -1285,7 +1147,6 @@ var RuleChecker = /** @class */ (function () {
                 var numIndexArr = indexArrArr[i];
                 for (var j = 0; j < numIndexArr.length; j++) {
                     for (var k = 0; k < valueList[numIndexArr[j]].length; k++) {
-                        //排除炸弹情况,炸弹类型单独处理
                         if (valueList[numIndexArr[j]][k] <= 0x4f) {
                             result.push(valueList[numIndexArr[j]][k]);
                             if (result.length == 4) {
@@ -1301,13 +1162,12 @@ var RuleChecker = /** @class */ (function () {
         return [];
     };
     RuleChecker.findThree = function (cardList1, valueList1, pcardList) {
-        var cardList = __spreadArrays(cardList1);
         var valueList = RuleChecker.getCopyObj(valueList1);
         if (RuleChecker.getValueCount(valueList, 3) == 0 && RuleChecker.getValueCount(valueList, 4) == 0) {
             return [];
         }
-        var result = new Array();
-        var value = RuleChecker.getCardMinValue(pcardList, 3); //上家牌大小
+        var result = [];
+        var value = RuleChecker.getCardMinValue(pcardList, 3);
         var myValue = -1;
         var numOrderArr = RuleChecker.getNumOrderArr(valueList, 3);
         for (var i = 0; i < numOrderArr.length; i++) {
@@ -1320,7 +1180,6 @@ var RuleChecker = /** @class */ (function () {
                     if (myValue > value) {
                         result = result.concat(itemList.slice(0, 3));
                         delete valueList[item];
-                        // result = result.concat(itemList.splice(0, 3));
                         break;
                     }
                 }
@@ -1336,15 +1195,13 @@ var RuleChecker = /** @class */ (function () {
     RuleChecker.findOrderCard = function (cardList1, valueList1, pcardList, cardNum) {
         var count = 0;
         var oldCardValue = 0;
-        var result = new Array();
+        var result = [];
         var value = -1;
-        var cardList = __spreadArrays(cardList1);
-        var maybeRes = new Array();
         if (RuleChecker.getCardMaxValue(pcardList, cardNum) == 14) {
             return result;
         }
         var valueList = RuleChecker.getCopyObj(valueList1);
-        value = RuleChecker.getCardMinValue(pcardList, cardNum); //上手牌值
+        value = RuleChecker.getCardMinValue(pcardList, cardNum); 
         for (var i in valueList) {
             var itemList = valueList[i];
             var tempValue = RuleChecker.getCardValue(itemList[0]);
@@ -1428,7 +1285,7 @@ var RuleChecker = /** @class */ (function () {
         return [];
     };
     RuleChecker.findSingleCard = function (valueList, pcardList) {
-        var result = new Array();
+        var result = [];
         var value = RuleChecker.getCardMinValue(pcardList, 1);
         for (var i in valueList) {
             var itemList = valueList[i];
@@ -1443,7 +1300,7 @@ var RuleChecker = /** @class */ (function () {
         return result;
     };
     RuleChecker.findPairCard = function (cardList, valueList, pcardList) {
-        var result = new Array();
+        var result = [];
         var value = RuleChecker.getCardMinValue(pcardList, 2);
         var i = 0;
         for (var i_1 in valueList) {
@@ -1465,23 +1322,17 @@ var RuleChecker = /** @class */ (function () {
         var valueList = RuleChecker.getCopyObj(valueList1);
         var pcardList1 = this.getThreeFlyOneWithoutWings(pcardList);
         var result = RuleChecker.findOrderCard(cardList, valueList, pcardList1, cardNum);
-        var threeValueList = RuleChecker.getCardValueArray(result);
-        var threeValueArr = RuleChecker.getValueArrOfNum(threeValueList, 3);
         if (result.length > pcardList1.length) {
             valueList = RuleChecker.getCardValueArray(cardList);
         }
-        else if (result.length == pcardList1.length && flyNum == 0) { //飞机不带直接返回结果
+        else if (result.length == pcardList1.length && flyNum == 0) {
             return result;
         }
         var count = result.length > pcardList1.length ? (result.length - 1) / cardNum : result.length / cardNum;
-        // var i: number = 0;
         if (((result.length + (count * flyNum)) == pcardList.length) || ((result.length + (count * flyNum)) == pcardList.length + 1 && result.length > pcardList1.length)) {
-            var index = void 0;
-            var itemList1 = void 0;
-            var tempCount = -1;
             var resultValueList = RuleChecker.getCardValueArray(result);
             var getPureValueArr = RuleChecker.getPureValueArr(resultValueList);
-            var uniqueObj = new Object();
+            var uniqueObj = {};
             for (var i = 0; i < getPureValueArr.length; i++) {
                 uniqueObj[getPureValueArr[i]] = i.toString();
             }
@@ -1496,7 +1347,7 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
             if (result.length >= 6) {
-                var indexArr = new Array();
+                var indexArr = [];
                 for (var j = 1; j < 4; j++) {
                     indexArr.push(RuleChecker.getIndexArrayOfNum(valueList, j));
                 }
@@ -1505,9 +1356,8 @@ var RuleChecker = /** @class */ (function () {
                     if (numIndexArr != null) {
                         for (var l = 0; l < numIndexArr.length; l++) {
                             for (var m = 0; m < valueList[numIndexArr[l]].length; m++) {
-                                // if (valueList[numIndexArr[l]][m] <= 53 && threeValueArr.indexOf(RuleChecker.getCardValue(valueList[numIndexArr[l]][m])) == -1) {//不选择可合为炸弹的牌为带牌
-                                if (valueList[numIndexArr[l]][m] <= 0x4f) { //不选择可合为炸弹的牌为带牌
-                                    if (flyNum == 2 && valueList[numIndexArr[l]].length == 2) { //三带对
+                                if (valueList[numIndexArr[l]][m] <= 0x4f) { 
+                                    if (flyNum == 2 && valueList[numIndexArr[l]].length == 2) { 
                                         result.push(valueList[numIndexArr[l]][m]);
                                     }
                                     else if (flyNum == 1) {
@@ -1530,23 +1380,17 @@ var RuleChecker = /** @class */ (function () {
         var valueList = RuleChecker.getCopyObj(valueList1);
         var pcardList1 = this.getFourFlyOneWithoutWings(pcardList);
         var result = RuleChecker.findOrderCard(cardList, valueList, pcardList1, cardNum);
-        var threeValueList = RuleChecker.getCardValueArray(result);
-        // let threeValueArr = RuleChecker.getValueArrOfNum(threeValueList, 4);
         if (result.length > pcardList1.length) {
             valueList = RuleChecker.getCardValueArray(cardList);
         }
-        else if (result.length == pcardList1.length && flyNum == 0) { //飞机不带直接返回结果
+        else if (result.length == pcardList1.length && flyNum == 0) {
             return result;
         }
         var count = result.length > pcardList1.length ? (result.length - 1) / cardNum : result.length / cardNum;
-        var i = 0;
         if (((result.length + (count * flyNum)) == pcardList.length) || ((result.length + (count * flyNum)) == pcardList.length + 1 && result.length > pcardList1.length)) {
-            var index = void 0;
-            var itemList1 = void 0;
-            var tempCount = -1;
             var resultValueList = RuleChecker.getCardValueArray(result);
             var getPureValueArr = RuleChecker.getPureValueArr(resultValueList);
-            var uniqueObj = new Object();
+            var uniqueObj = {};
             for (var i_2 = 0; i_2 < getPureValueArr.length; i_2++) {
                 uniqueObj[getPureValueArr[i_2]] = i_2.toString();
             }
@@ -1561,7 +1405,7 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
             if (result.length >= 8) {
-                var indexArr = new Array();
+                var indexArr = [];
                 for (var j = 1; j < 4; j++) {
                     indexArr.push(RuleChecker.getIndexArrayOfNum(valueList, j));
                 }
@@ -1570,7 +1414,6 @@ var RuleChecker = /** @class */ (function () {
                     if (numIndexArr != null) {
                         for (var l = 0; l < numIndexArr.length; l++) {
                             for (var m = 0; m < valueList[numIndexArr[l]].length; m++) {
-                                // if (valueList[numIndexArr[l]][m] <= 53 && threeValueArr.indexOf(RuleChecker.getCardValue(valueList[numIndexArr[l]][m])) == -1) {//不选择可合为炸弹的牌为带牌
                                 if (valueList[numIndexArr[l]][m] <= 0x4f) {
                                     result.push(valueList[numIndexArr[l]][m]);
                                 }
@@ -1585,24 +1428,19 @@ var RuleChecker = /** @class */ (function () {
         }
         return [];
     };
-    /**获取不带翅膀的飞机 */
     RuleChecker.getThreeFlyOneWithoutWings = function (cardList) {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var cardListArr;
         var speCardValue;
         var pureThreeFlyValueList;
-        var cardListRes = new Array();
+        var cardListRes = [];
         cardListArr = cardList;
         pureThreeFlyValueList = this.shiftNeedlessCardsForPureThreeFly(valueList, 3);
         for (var j = 0, len = pureThreeFlyValueList.length; j < len; j++) {
-            // for (let k = 0; k < pureThreeFlyValueList[j].length; k++) {
-            // cardListRes.push(pureThreeFlyValueList[j][k]);
-            // }
             cardListRes.push(pureThreeFlyValueList[j]);
         }
         return cardListRes;
     };
-    /**带牌是否大于上家 (用于带牌必大) */
     RuleChecker.isWingsGreater = function (wing1, wing2) {
         var len1 = wing1.length;
         var len2 = wing2.length;
@@ -1632,12 +1470,8 @@ var RuleChecker = /** @class */ (function () {
         }
         return resBoo;
     };
-    /**获取上家带牌
-     * @param cardsList {number[]} 需处理的牌组
-     * @param count {number} 三飞机或四飞机
-    */
     RuleChecker.getPreWings = function (cardsList1, count) {
-        var cardsList = __spreadArrays(cardsList1);
+        var cardsList = cardsList1.slice();
         var valueArr = RuleChecker.getCardValueArray(cardsList);
         var resArr = [];
         for (var i in valueArr) {
@@ -1654,19 +1488,13 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**从手牌获取带牌及已选手牌
-     * @param cardsList {number[]} 需处理的牌组
-     * @param count {number} 三飞机或四飞机
-    */
     RuleChecker.getHandsWingsWithSelected = function (cardsList1, pcardList, diffArr, count, wingCount, wingType) {
-        var cardsList = __spreadArrays(cardsList1);
+        var cardsList = cardsList1.slice();
         var diffArrObj = RuleChecker.getCardValueArray(diffArr);
         var diffArrValueArr = Object.keys(diffArrObj);
         var valueArr = RuleChecker.getCardValueArray(cardsList);
         var resArr = [];
         var wing2 = RuleChecker.getPreWings(pcardList, count);
-        var wing2ValueArr = RuleChecker.getCardValueArray(wing2);
-        //祛除已选牌
         var selectedCards = [];
         for (var i in valueArr) {
             var item = valueArr[i];
@@ -1675,7 +1503,6 @@ var RuleChecker = /** @class */ (function () {
                 selectedCards.push(item.splice(0, count));
             }
         }
-        //获取可带牌
         for (var j in valueArr) {
             var item = valueArr[j];
             for (var k = 0; k < item.length; k++) {
@@ -1701,24 +1528,19 @@ var RuleChecker = /** @class */ (function () {
         }
         return resArr;
     };
-    /**获取不带翅膀的四飞机 */
     RuleChecker.getFourFlyOneWithoutWings = function (cardList) {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var cardListArr;
         var speCardValue;
         var pureFourFlyValueList;
-        var cardListRes = new Array();
+        var cardListRes = [];
         cardListArr = cardList;
         pureFourFlyValueList = this.shiftNeedlessCardsForPureThreeFly(valueList, 4);
         for (var j = 0, len = pureFourFlyValueList.length; j < len; j++) {
-            // for (let k = 0; k < pureFourFlyValueList[j].length; k++) {
-            //     cardListRes.push(pureFourFlyValueList[j][k]);
-            // }
             cardListRes.push(pureFourFlyValueList[j]);
         }
         return cardListRes;
     };
-    /**根据牌值数量key值从小到大排序 */
     RuleChecker.getNumOrderArr = function (obj, beginNum) {
         var resArr = [];
         for (var i = beginNum; i < 4; i++) {
@@ -1750,30 +1572,28 @@ var RuleChecker = /** @class */ (function () {
 var CardType = /** @class */ (function () {
     function CardType() {
     }
-    CardType.CT_ERROR = 0; //错误类型
-    CardType.CT_SINGLE = 1; //单牌类型
-    CardType.CT_DOUBLE = 2; //对牌类型
-    CardType.CT_THREE = 3; //三条类型
-    CardType.CT_SINGLE_LINE = 4; //单连类型
-    CardType.CT_DOUBLE_LINE = 5; //对连类型
-    CardType.CT_THREE_LINE = 6; //三连类型
-    CardType.CT_THREE_TAKE_ONE = 7; //三带一单
-    CardType.CT_THREE_TAKE_TWO = 8; //三带一对
-    CardType.CT_FOUR_TAKE_ONE = 9; //四带两单
-    CardType.CT_FOUR_TAKE_TWO = 10; //四带两对
-    CardType.CT_BOMB_CARD = 11; //炸弹类型
-    CardType.CT_MISSILE_CARD = 12; //火箭类型
-    CardType.CHUNTIAN = 13; //春天
-    CardType.FANCHUN = 14; //反春
-    CardType.TONGTIANSHUN = 15; //通天顺
+    CardType.CT_ERROR = 0; 
+    CardType.CT_SINGLE = 1; 
+    CardType.CT_DOUBLE = 2; 
+    CardType.CT_THREE = 3; 
+    CardType.CT_SINGLE_LINE = 4; 
+    CardType.CT_DOUBLE_LINE = 5; 
+    CardType.CT_THREE_LINE = 6; 
+    CardType.CT_THREE_TAKE_ONE = 7; 
+    CardType.CT_THREE_TAKE_TWO = 8; 
+    CardType.CT_FOUR_TAKE_ONE = 9; 
+    CardType.CT_FOUR_TAKE_TWO = 10; 
+    CardType.CT_BOMB_CARD = 11; 
+    CardType.CT_MISSILE_CARD = 12; 
+    CardType.CHUNTIAN = 13; 
+    CardType.FANCHUN = 14; 
+    CardType.TONGTIANSHUN = 15; 
     CardType.normalTypeArrr = [
         CardType.CT_SINGLE,
         CardType.CT_DOUBLE,
         CardType.CT_DOUBLE_LINE,
         CardType.CT_SINGLE_LINE,
         CardType.CT_THREE,
-        // CardType.DealCardType_SAN_FEI_JI_BU_DAI, //三飞机不带
-        // CardType.DealCardType_SI_FEI_JI_BU_DAI, //四飞机不带
         CardType.CT_BOMB_CARD,
     ];
     return CardType;
