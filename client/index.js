@@ -23,20 +23,6 @@ function decodeData(buffer) {
     const _funcName = ENUM_CMD_FN[_cmd];
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
-
-function onConnected() {
-    startGame();
-}
-
-function request(data) {
-    const bufferData = encodeData(data);
-    socket.write(bufferData);
-}
-
-function startGame() {
-    request({ cmd: ENUM_CMD_FN.ready_C2S, body: null })
-}
-
 function encodeData(data) {
     const body = Buffer.from(JSON.stringify(data.body));
     const header = Buffer.alloc(1);
@@ -44,8 +30,17 @@ function encodeData(data) {
     const buffer = Buffer.concat([header, body]);
     return buffer;
 }
-
+function onConnected() {
+    startGame();
+}
+function request(data) {
+    const bufferData = encodeData(data);
+    socket.write(bufferData);
+}
 //====== game logic below ======
+function startGame() {
+    request({ cmd: ENUM_CMD_FN.ready_C2S, body: null })
+}
 let mCardsArr = [];
 this.dealCards_S2C = function (data) {
     let _cards = data.cards;

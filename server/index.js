@@ -2,11 +2,15 @@ const net = require('net');
 const { ENUM_CMD_FN } = require('../share/proto');
 const { RuleChecker } = require('../share/rule-checker');
 var mSocket;
+var port = 8080;
 const server = net.createServer((socket) => {
     mSocket = socket;
     mSocket.on('data', (data) => {
         decodeData(data)
     });
+});
+server.listen(port, () => {
+    console.log(`server listening on 127.0.0.1:${port}`)
 });
 var _this = this;
 function decodeData(data) {
@@ -15,11 +19,6 @@ function decodeData(data) {
     const _funcName = ENUM_CMD_FN[_cmdID];
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
-function send(cmd, data) {
-    if (!mIsGaming) return;
-    const _dataBuffer = encodeData(cmd, data);
-    mSocket.write(_dataBuffer);
-}
 function encodeData(cmd, data) {
     let _header = Buffer.alloc(1);
     _header.writeUInt8(cmd);
@@ -27,10 +26,11 @@ function encodeData(cmd, data) {
     const _dataBuffer = Buffer.concat([_header, _body]);
     return _dataBuffer;
 }
-var port = 8080;
-server.listen(port, () => {
-    console.log(`server listening on 127.0.0.1:${port}`)
-});
+function send(cmd, data) {
+    if (!mIsGaming) return;
+    const _dataBuffer = encodeData(cmd, data);
+    mSocket.write(_dataBuffer);
+}
 
 //====== game logic bellow ======
 var playerCardsDic = {};
