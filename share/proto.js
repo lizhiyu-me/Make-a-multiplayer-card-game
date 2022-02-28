@@ -13,10 +13,10 @@ const ENUM_CMD_FN = generateEnum(
         "ready_C2S",
         "dealCards_S2C",
         "competeForLandLordRole_C2S",
-        "playTurn",
+        "playTurn_S2C",
         "playCards_C2S",
         "playCards_S2C",
-        "notAllowedByRule_S2C",
+        "illegalCards_S2C",
         "gameEnd_S2C"
     ]);
 

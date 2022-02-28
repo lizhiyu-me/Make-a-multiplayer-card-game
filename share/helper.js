@@ -17,7 +17,13 @@ var cardNameNumberDic = {
     '6': 0x06,
     '5': 0x05,
     '4': 0x04,
-    '3': 0x03
+    '3': 0x03,
+    'rjkr': 0x0f,
+    'bjkr': 0x0e,
+    'a': 0x01,
+    'k': 0x0d,
+    'q': 0x0c,
+    'j': 0x0b,
 }
 /**
  * * rJkr for redJoker

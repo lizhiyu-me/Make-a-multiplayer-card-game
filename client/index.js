@@ -1,7 +1,7 @@
 const net = require('net');
 const readlineSync = require('readline-sync');
 const { ENUM_CMD_FN } = require('../share/proto');
-const { convert2ReadableNames,convert2CardNumbers } = require('../share/helper');
+const { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } = require('../share/helper');
 
 const socket = new net.Socket();
 socket.connect({
@@ -60,8 +60,14 @@ this.playCards_C2S = function () {
     console.log('Now, your turn.');
     console.log('Your cards->', convert2ReadableNames(mCardsArr).join(','));
     console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm your input, input nothing to pass this turn):');
-    let _cardsNumberStr = convert2CardNumbers(getInputFromCmd().split(",")).join(",");
-    request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsNumberStr, 'seatNumber': 0 } });
+    let _inputContent = getInputFromCmd();
+    if (_inputContent == "" || checkIsCardsLegal(_inputContent)) {
+        let _cardsNumberStr = convert2CardNumbers(_inputContent.split(",")).join(",");
+        request({ cmd: ENUM_CMD_FN.playCards_C2S, body: { 'cards': _cardsNumberStr, 'seatNumber': 0 } });
+    } else {
+        console.log("Illegal cards, please select your cards again.")
+        playTurn({ seatNumber: 0 });
+    }
 }
 this.playCards_S2C = function (data) {
     let _cardsPlayed = data.cards;
@@ -72,9 +78,9 @@ this.playCards_S2C = function (data) {
         console.log(`Player ${_seatNumber}-> played ${convert2ReadableNames(_cardsPlayed).join(",")}.`);
     }
 }
-this.notAllowedByRule_S2C = function (data) {
-    console.log("Cards are not allowed by rule.");
-    this.playTurn({ seatNumber: 0});
+this.illegalCards_S2C = function (data) {
+    console.log("Illegal Cards.");
+    playTurn({ seatNumber: 0 });
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
@@ -91,26 +97,27 @@ this.competeForLandLordRole_C2S = function (score) {
     console.log(`You has called ${score} score`);
     request({ cmd: ENUM_CMD_FN.competeForLandLordRole_C2S, body: { 'score': score, seatNumber: 0 } });
 }
-this.playTurn = function (data) {
+this.playTurn_S2C = function (data) {
     let _seatNumber = data.seatNumber;
     if (_seatNumber == 0) {
         //update hand cards
-        if(data.handCards)mCardsArr = sortByValue(data.handCards);
+        if (data.handCards) mCardsArr = sortByValue(data.handCards);
         this.playCards_C2S();
     }
 }
 
 //====== data and custom function bellow ======
+function playTurn(data) {
+    _this.playTurn_S2C(data);
+}
 function sortByValue(arr) {
     return arr.sort((a, b) => {
         return getCardValue(b) - getCardValue(a);
     })
 }
-
 function getInputFromCmd() {
     return readlineSync.question();
 }
-
 function getCardValue(cardSerialNumber) {
     let _cardNumber;
     let _cardNumberWithoutSuit = cardSerialNumber % 0x10;
@@ -126,4 +133,12 @@ function getCardValue(cardSerialNumber) {
         _cardNumber = _cardNumberWithoutSuit;
     }
     return _cardNumber;
+}
+function checkIsCardsLegal(cardsNumberStr) {
+    let _cardsNumberStrArr = cardsNumberStr.split(",");
+    for (let i = 0; i < _cardsNumberStrArr.length; i++) {
+        const _cardNumberStr = _cardsNumberStrArr[i];
+        if (!cardNameNumberDic[_cardNumberStr]) return false;
+    }
+    return true;
 }

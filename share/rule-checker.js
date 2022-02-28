@@ -5,14 +5,12 @@ var RuleChecker = /** @class */ (function () {
         var resNum = -1;
         cardSerialNo = Number(cardSerialNo);
         resNum = cardSerialNo % 16;
-        //大小王
         if (resNum == 14) {
             resNum = 16;
         }
         else if (resNum == 15) {
             resNum = 17;
         }
-        //A,2
         else if (resNum == 1) {
             resNum = 14;
         }
@@ -221,7 +219,6 @@ var RuleChecker = /** @class */ (function () {
         resObj["speSerialArr"] = [];
         if (cardList.length >= 6 && cardList.length % 2 == 0) {
             var valueArrObj = RuleChecker.getCardValueArray(cardList);
-            var objKeysArr = Object.keys(valueArrObj);
             var count = RuleChecker.getValueOrderCount(valueArrObj, 2);
             if (count >= 2 && count * 2 == cardList.length)
                 resObj["isOK"] = true;
@@ -753,8 +750,6 @@ var RuleChecker = /** @class */ (function () {
     };
     RuleChecker.shiftNeedlessCardsForPureThreeFly = function (valueList, cardNum) {
         if (cardNum === void 0) { cardNum = 3; }
-        var count = 0;
-        var oldCardValue = 0;
         var valueListRes = [];
         for (var i in valueList) {
             if (valueList[i] != null) {
@@ -1430,8 +1425,6 @@ var RuleChecker = /** @class */ (function () {
     };
     RuleChecker.getThreeFlyOneWithoutWings = function (cardList) {
         var valueList = RuleChecker.getCardValueArray(cardList);
-        var cardListArr;
-        var speCardValue;
         var pureThreeFlyValueList;
         var cardListRes = [];
         cardListArr = cardList;
@@ -1530,8 +1523,6 @@ var RuleChecker = /** @class */ (function () {
     };
     RuleChecker.getFourFlyOneWithoutWings = function (cardList) {
         var valueList = RuleChecker.getCardValueArray(cardList);
-        var cardListArr;
-        var speCardValue;
         var pureFourFlyValueList;
         var cardListRes = [];
         cardListArr = cardList;
