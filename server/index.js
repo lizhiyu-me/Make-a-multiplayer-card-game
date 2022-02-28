@@ -16,11 +16,11 @@ function decodeData(data) {
     if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
 }
 function send(cmd, data) {
-    if(!mIsGaming) return;
+    if (!mIsGaming) return;
     const _dataBuffer = encodeData(cmd, data);
     mSocket.write(_dataBuffer);
 }
-function encodeData(cmd, data){
+function encodeData(cmd, data) {
     let _header = Buffer.alloc(1);
     _header.writeUInt8(cmd);
     let _body = Buffer.from(JSON.stringify(data));
@@ -65,7 +65,7 @@ this.ready_C2S = function () {
 this.competeForLandLordRole_C2S = function (data) {
     let _score = data.score;
     let _seatNumber = data.seatNumber;
-    send(ENUM_CMD_FN.playTurn, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
+    send(ENUM_CMD_FN.playTurn_S2C, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
 }
 this.playCards_C2S = function (data) {
     checkIsTrickEnd(data.seatNumber);
@@ -83,7 +83,7 @@ this.playCards_C2S = function (data) {
         let _cardsNumberArr = _cardsNumberStr.split(",").map(card => ~~card);
         if (!checkHasCards(_cardsNumberArr, _seatNumber)) {
             console.log("no cards to play");
-            send(ENUM_CMD_FN.notAllowedByRule_S2C, {});
+            send(ENUM_CMD_FN.illegalCards_S2C, {});
             return;
         }
         let _curCardsType = -1;
@@ -107,7 +107,7 @@ this.playCards_C2S = function (data) {
             this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
             console.log("can not play these cards");
-            send(ENUM_CMD_FN.notAllowedByRule_S2C, {});
+            send(ENUM_CMD_FN.illegalCards_S2C, {});
         }
     }
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
@@ -184,9 +184,9 @@ function botPlayCards(_preCardsArr, seatNumber) {
     }
     setTimeout(() => {
         let _turnSeatNumber = getNextPlayerSeatNumber(seatNumber);
-        if(_turnSeatNumber == 0)send(ENUM_CMD_FN.playTurn, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
-        else{
-            botPlayCards(preCardsArr,_turnSeatNumber);
+        if (_turnSeatNumber == 0) send(ENUM_CMD_FN.playTurn_S2C, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+        else {
+            botPlayCards(preCardsArr, _turnSeatNumber);
         }
     }, 500);
 }
