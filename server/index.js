@@ -14,10 +14,6 @@ server.listen(port, () => {
 });
 var _this = this;
 function decodeData(buffer) {
-    /* let _cmdID = data.readUInt8();
-    let _body = JSON.parse(data.slice(1));
-    const _funcName = ENUM_CMD_FN[_cmdID];
-    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body); */
     let _mainMsg = card_game_pb.MainMessage.deserializeBinary(buffer);
     let _cmd = _mainMsg.getCmdId();
     let _bytesData = _mainMsg.getData();
@@ -26,7 +22,6 @@ function decodeData(buffer) {
         case card_game_pb.Cmd.READY_C2S:
             _data = card_game_pb.Ready_C2S.deserializeBinary(_bytesData);
             _data = {
-                // cards: _data.getCardsList(),
                 seatNumber: _data.getSeatNumber()
             }
             if (_this.ready_C2S) _this.ready_C2S(_data);
@@ -88,18 +83,13 @@ function encodeData(cmd, data) {
         _mainMsg.setData(_data);
         let _completeData = _mainMsg.serializeBinary();
         return _completeData;
-        // socket.write(_completeData);
     }
-    // let _header = Buffer.alloc(1);
-    // _header.writeUInt8(cmd);
-    // let _body = Buffer.from(JSON.stringify(data));
-    // const _dataBuffer = Buffer.concat([_header, _body]);
-    // return _dataBuffer;
+    return null;
 }
 function send(cmd, data) {
     if (!mIsGaming) return;
     const _dataBuffer = encodeData(cmd, data);
-    mSocket.write(_dataBuffer);
+    if (_dataBuffer) mSocket.write(_dataBuffer);
 }
 
 //====== game logic bellow ======
@@ -139,10 +129,10 @@ this.competeForLandLordRole_C2S = function (data) {
 }
 this.playCards_C2S = function (data) {
     checkIsTrickEnd(data.seatNumber);
-    let _cardsNumberStr = data.cards;
+    let _cardsNumberArr = data.cards;
     let _seatNumber = data.seatNumber;
     let _canPlay = false;
-    if (_cardsNumberStr === "") {//pass
+    if (_cardsNumberArr.length == 0) {//pass
         _canPlay = true;
         this.playCards_S2C({ cards: [], seatNumber: _seatNumber });
         preCardsArr = [];
@@ -150,7 +140,6 @@ this.playCards_C2S = function (data) {
         prePlayerSeat = _seatNumber;
     } else {
         //check has cards
-        let _cardsNumberArr = _cardsNumberStr.split(",").map(card => ~~card);
         if (!checkHasCards(_cardsNumberArr, _seatNumber)) {
             console.log("no cards to play");
             send(card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
@@ -177,7 +166,7 @@ this.playCards_C2S = function (data) {
             this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
             console.log("can not play these cards");
-            send(card_game_pb.Cmd.IllegalCards_S2C, {});
+            send(card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
         }
     }
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
