@@ -1,6 +1,6 @@
 const net = require('net');
-const { ENUM_CMD_FN } = require('../share/proto');
 const { RuleChecker } = require('../share/rule-checker');
+const card_game_pb = require("../share/proto/out/card-game_pb");
 var mSocket;
 var port = 8080;
 const server = net.createServer((socket) => {
@@ -13,18 +13,88 @@ server.listen(port, () => {
     console.log(`server listening on 127.0.0.1:${port}`)
 });
 var _this = this;
-function decodeData(data) {
-    let _cmdID = data.readUInt8();
+function decodeData(buffer) {
+    /* let _cmdID = data.readUInt8();
     let _body = JSON.parse(data.slice(1));
     const _funcName = ENUM_CMD_FN[_cmdID];
-    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body);
+    if (_funcName && typeof _this[_funcName] == "function") _this[_funcName](_body); */
+    let _mainMsg = card_game_pb.MainMessage.deserializeBinary(buffer);
+    let _cmd = _mainMsg.getCmdId();
+    let _bytesData = _mainMsg.getData();
+    let _data;
+    switch (_cmd) {
+        case card_game_pb.Cmd.READY_C2S:
+            _data = card_game_pb.Ready_C2S.deserializeBinary(_bytesData);
+            _data = {
+                // cards: _data.getCardsList(),
+                seatNumber: _data.getSeatNumber()
+            }
+            if (_this.ready_C2S) _this.ready_C2S(_data);
+            break;
+        case card_game_pb.Cmd.PLAYCARDS_C2S:
+            _data = card_game_pb.PlayCards_C2S.deserializeBinary(_bytesData);
+            _data = {
+                cards: _data.getCardsList(),
+                seatNumber: _data.getSeatNumber()
+            }
+            if (_this.playCards_C2S) _this.playCards_C2S(_data);
+            break;
+        case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S:
+            _data = card_game_pb.CompeteForLandLordRole_C2S.deserializeBinary(_bytesData);
+            _data = {
+                score: _data.getScore(),
+                seatNumber: _data.getSeatNumber()
+            }
+            if (_this.competeForLandLordRole_C2S) _this.competeForLandLordRole_C2S(_data);
+            break;
+        default:
+            console.log("no message matched.")
+    }
 }
 function encodeData(cmd, data) {
-    let _header = Buffer.alloc(1);
-    _header.writeUInt8(cmd);
-    let _body = Buffer.from(JSON.stringify(data));
-    const _dataBuffer = Buffer.concat([_header, _body]);
-    return _dataBuffer;
+    let _cmd = cmd;
+    let _proto_struct_obj;
+    switch (_cmd) {
+        case card_game_pb.Cmd.DEALCARDS_S2C:
+            _proto_struct_obj = new card_game_pb.DealCards_S2C();
+            _proto_struct_obj.setCardsList(data.cards);
+            _proto_struct_obj.setSeatNumber(data.seatNumber);
+            break;
+        case card_game_pb.Cmd.PLAYCARDS_S2C:
+            _proto_struct_obj = new card_game_pb.PlayCards_S2C();
+            _proto_struct_obj.setCardsList(data.cards);
+            _proto_struct_obj.setSeatNumber(data.seatNumber);
+            break;
+        case card_game_pb.Cmd.ILLEGALCARDS_S2C:
+            _proto_struct_obj = new card_game_pb.IllegalCards_S2C();
+            _proto_struct_obj.setSeatNumber(data.seatNumber);
+            break;
+        case card_game_pb.Cmd.GAMEEND_S2C:
+            _proto_struct_obj = new card_game_pb.GameEnd_S2C();
+            _proto_struct_obj.setSeatNumber(data.seatNumber);
+            break;
+        case card_game_pb.Cmd.PLAYTURN_S2C:
+            _proto_struct_obj = new card_game_pb.PlayTurn_S2C();
+            _proto_struct_obj.setHandCardsList(data.handCards);
+            _proto_struct_obj.setSeatNumber(data.seatNumber);
+            break;
+        default:
+            console.log("no message matched.")
+    }
+    if (_proto_struct_obj) {
+        let _mainMsg = new card_game_pb.MainMessage();
+        _mainMsg.setCmdId(_cmd);
+        let _data = _proto_struct_obj.serializeBinary();
+        _mainMsg.setData(_data);
+        let _completeData = _mainMsg.serializeBinary();
+        return _completeData;
+        // socket.write(_completeData);
+    }
+    // let _header = Buffer.alloc(1);
+    // _header.writeUInt8(cmd);
+    // let _body = Buffer.from(JSON.stringify(data));
+    // const _dataBuffer = Buffer.concat([_header, _body]);
+    // return _dataBuffer;
 }
 function send(cmd, data) {
     if (!mIsGaming) return;
@@ -56,7 +126,7 @@ this.dealCards_S2C = function () {
         seatNumber: 0,
         cards: playerCardsDic[0]
     }
-    send(ENUM_CMD_FN.dealCards_S2C, data);
+    send(card_game_pb.Cmd.DEALCARDS_S2C, data);
 }
 this.ready_C2S = function () {
     mIsGaming = true;
@@ -65,7 +135,7 @@ this.ready_C2S = function () {
 this.competeForLandLordRole_C2S = function (data) {
     let _score = data.score;
     let _seatNumber = data.seatNumber;
-    send(ENUM_CMD_FN.playTurn_S2C, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
+    send(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
 }
 this.playCards_C2S = function (data) {
     checkIsTrickEnd(data.seatNumber);
@@ -83,7 +153,7 @@ this.playCards_C2S = function (data) {
         let _cardsNumberArr = _cardsNumberStr.split(",").map(card => ~~card);
         if (!checkHasCards(_cardsNumberArr, _seatNumber)) {
             console.log("no cards to play");
-            send(ENUM_CMD_FN.illegalCards_S2C, {});
+            send(card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
             return;
         }
         let _curCardsType = -1;
@@ -107,14 +177,14 @@ this.playCards_C2S = function (data) {
             this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
             console.log("can not play these cards");
-            send(ENUM_CMD_FN.illegalCards_S2C, {});
+            send(card_game_pb.Cmd.IllegalCards_S2C, {});
         }
     }
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
 }
 this.playCards_S2C = function (data) {
     removePlayerCards(data.cards, data.seatNumber);
-    send(ENUM_CMD_FN.playCards_S2C, data);
+    send(card_game_pb.Cmd.PLAYCARDS_S2C, data);
 }
 //====== data and custom function bellow ======
 var preCardsArr = [];
@@ -136,7 +206,7 @@ function removePlayerCards(playedCards, seatNumber) {
         _handCardsArr.splice(_idx, 1);
     }
     if (_handCardsArr.length === 0) {
-        send(ENUM_CMD_FN.gameEnd_S2C, { seatNumber: seatNumber });
+        send(card_game_pb.Cmd.GAMEEND_S2C, { seatNumber: seatNumber });
         resetWhenGameEnd();
     }
     return _handCardsArr;
@@ -184,7 +254,7 @@ function botPlayCards(_preCardsArr, seatNumber) {
     }
     setTimeout(() => {
         let _turnSeatNumber = getNextPlayerSeatNumber(seatNumber);
-        if (_turnSeatNumber == 0) send(ENUM_CMD_FN.playTurn_S2C, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+        if (_turnSeatNumber == 0) send(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
         else {
             botPlayCards(preCardsArr, _turnSeatNumber);
         }
