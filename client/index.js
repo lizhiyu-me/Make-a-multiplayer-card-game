@@ -61,6 +61,14 @@ function decodeData(buffer) {
             }
             if (_this.playTurn_S2C) _this.playTurn_S2C(_data);
             break;
+        case card_game_pb.Cmd.GAMESTART_S2C:
+            _data = card_game_pb.GameStart_S2C.deserializeBinary(_bytesData);
+            _data = {
+                playerID: _data.getPlayerId(),
+                seatNumber: _data.getSeatNumber()
+            }
+            if (_this.gameStart_S2C) _this.gameStart_S2C(_data);
+            break;
         default:
             console.log("no message matched.")
     }
@@ -123,7 +131,7 @@ this.playCards_C2S = function () {
         send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { 'cards': _cardsNumberArr, 'seatNumber': 0 } });
     } else {
         console.log("Illegal cards, please select your cards again.")
-        playTurn({ seatNumber: 0 });
+        playTurn({ seatNumber: seatNumber });
     }
 }
 this.playCards_S2C = function (data) {
@@ -137,13 +145,14 @@ this.playCards_S2C = function (data) {
 }
 this.illegalCards_S2C = function (data) {
     console.log("Illegal Cards.");
-    playTurn({ seatNumber: 0 });
+    playTurn({ seatNumber: seatNumber });
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
-    let _isWin = _winnerSeatNumber === 0;
+    let _isWin = _winnerSeatNumber === seatNumber;
     let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
     console.log(_content);
+    resetWhenGameEnd();
 
     console.log("Press Enter to restart.")
     getInputFromCmd();
@@ -152,18 +161,27 @@ this.gameEnd_S2C = function (data) {
 
 this.competeForLandLordRole_C2S = function (score) {
     console.log(`You has called ${score} score`);
-    send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: score, seatNumber: 0 } });
+    send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: score, seatNumber: seatNumber } });
 }
 this.playTurn_S2C = function (data) {
     let _seatNumber = data.seatNumber;
-    if (_seatNumber == 0) {
+    if (_seatNumber == seatNumber) {
         //update hand cards
         if (data.handCards) mCardsArr = sortByValue(data.handCards);
         this.playCards_C2S();
     }
 }
+this.gameStart_S2C = function (data) {
+    let _seatNumber = data.seatNumber;
+    let _playerID = data.playerID;
+
+    seatNumber = _seatNumber;
+    playerID = _playerID;
+}
 
 //====== data and custom function bellow ======
+var seatNumber;
+var playerID;
 function startGame() {
     send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
 }
@@ -201,4 +219,9 @@ function checkIsCardsLegal(cardsNumberStr) {
         if (!cardNameNumberDic[_cardNumberStr]) return false;
     }
     return true;
+}
+
+function resetWhenGameEnd() {
+    seatNumber = null;
+    playerID = null;
 }

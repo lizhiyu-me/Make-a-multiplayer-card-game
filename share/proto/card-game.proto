@@ -9,6 +9,7 @@ enum Cmd{
     PLAYCARDS_S2C = 6;
     ILLEGALCARDS_S2C = 7;
     GAMEEND_S2C = 8;
+    GAMESTART_S2C = 9;
 }
 
 message MainMessage{
@@ -51,6 +52,11 @@ message GameEnd_S2C{
 message PlayTurn_S2C{
     uint32 seat_number = 1;
     repeated uint32 hand_cards = 2;
+}
+
+message GameStart_S2C{
+    uint32 seat_number = 1;
+    uint32 player_id = 2;
 }
 
 
