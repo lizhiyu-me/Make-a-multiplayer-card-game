@@ -96,6 +96,13 @@ function encodeData(cmd, data) {
             _proto_struct_obj.setPlayerId(data.playerID);
             _proto_struct_obj.setSeatNumber(data.seatNumber);
             break;
+        case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C:
+            _proto_struct_obj = new card_game_pb.CompeteForLandLordRole_S2C();
+            _proto_struct_obj.setCurMaxScore(data.curMaxScore);
+        case card_game_pb.Cmd.BROADCAST_MSG_S2C:
+            _proto_struct_obj = new card_game_pb.BroadCastMsg_S2C();
+            _proto_struct_obj.setMsg(data.msg);
+            break;
         default:
             console.log("no message matched.")
     }
@@ -117,21 +124,18 @@ function send(playerID, cmd, data) {
 function broadcast(cmd, data) {
     if (!mIsGaming) return;
     const _dataBuffer = encodeData(cmd, data);
-
     if (_dataBuffer) {
         let _keyArr = Object.keys(socketDic);
         for (let i = 0; i < _keyArr.length; i++) {
             let _socket = socketDic[_keyArr[i]];
-            // for (const _socket of socketDic) {
             _socket.write(_dataBuffer);
-            // }
         }
     }
 }
 
 //====== game logic bellow ======
 var playerCardsDic = {};
-var playerCount = 3;
+var playerCount = 2;
 var initialCardCount = 17;
 var lordCardsCount = 3;
 this.dealCards_S2C = function () {
@@ -141,8 +145,7 @@ this.dealCards_S2C = function () {
             _pokerPool.slice(i * initialCardCount, (i + 1) * initialCardCount);
     }
     _lordCards = _pokerPool.slice(-lordCardsCount);
-    //TODO: lord cards should assign to the player who call the biggest score. 
-    playerCardsDic[0] = playerCardsDic[0].concat(_lordCards);
+    playerCardsDic[lordRoleSeat] = playerCardsDic[lordRoleSeat].concat(_lordCards);
 
     let _keyArr = Object.keys(playerCardsDic);
     for (let i = 0; i < _keyArr.length; i++) {
@@ -169,13 +172,39 @@ this.ready_C2S = function () {
     if (readyPlayerCount == playerCount) {
         mIsGaming = true;
         roundStart();
-        this.dealCards_S2C();
+
+        let _firstCompeteLordPlayerSeatNumber = Math.floor(Math.random() * playerCount);
+        let _playerID = getPlayerIDBySeatNumber(_firstCompeteLordPlayerSeatNumber);
+        send(_playerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: maxCalledLordScore });
     }
 }
+var calledCompeteLordScoreArr = [];
+var maxCalledLordScore = 0;
+var lordRoleSeat = 0;
+var lordRolePlayerID = 0;
 this.competeForLandLordRole_C2S = function (playerID, data) {
     let _score = data.score;
     let _seatNumber = data.seatNumber;
-    send(playerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _seatNumber, handCards: playerCardsDic[_seatNumber] });
+    broadMsg("Player " + _seatNumber + " called " + _score + " score.");
+    calledCompeteLordScoreArr.push(_score);
+
+    if (_score > maxCalledLordScore) {
+        maxCalledLordScore = _score;
+        lordRoleSeat = _seatNumber;
+        lordRolePlayerID = playerID;
+    }
+    let _hasCompeteForLordRoleCompleted = calledCompeteLordScoreArr.length == playerCount || _score == 3;
+    if (_hasCompeteForLordRoleCompleted) {
+        //broad lord role
+        broadMsg("Land lord player's seat number is " + lordRoleSeat);
+        this.dealCards_S2C();
+        //turn to lord role player
+        send(lordRolePlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: lordRoleSeat, handCards: playerCardsDic[lordRoleSeat] });
+    } else {
+        let _nextTurnSeat = getNextPlayerSeatNumber(_seatNumber);
+        let _nextPlayerID = getPlayerIDBySeatNumber(_nextTurnSeat);
+        send(_nextPlayerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: lordRoleSeat, curMaxScore: maxCalledLordScore });
+    }
 }
 this.playCards_C2S = function (playerID, data) {
     checkIsTrickEnd(data.seatNumber);
@@ -184,7 +213,7 @@ this.playCards_C2S = function (playerID, data) {
     let _canPlay = false;
     if (_cardsNumberArr.length == 0) {//pass
         _canPlay = true;
-        _this.playCards_S2C(playerID,{ cards: [], seatNumber: _seatNumber });
+        _this.playCards_S2C(playerID, { cards: [], seatNumber: _seatNumber });
         preCardsArr = [];
         preCardsType = -1;
         prePlayerSeat = _seatNumber;
@@ -205,8 +234,8 @@ this.playCards_C2S = function (playerID, data) {
         } else {
             let _res = RuleChecker.CheckCard(_cardsNumberArr, preCardsArr, preCardsType);
             if (_res['isOK']) {
-                _canPlay = true;
                 _curCardsType = ~~_res.cardsType[0];
+                _canPlay = true;
             }
         }
         if (_canPlay) {
@@ -215,15 +244,15 @@ this.playCards_C2S = function (playerID, data) {
             prePlayerSeat = _seatNumber;
             _this.playCards_S2C(playerID, { cards: preCardsArr, seatNumber: _seatNumber });
         } else {
-            console.log("can not play these cards");
+            console.log("Illegal cards");
             send(playerID, card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
         }
     }
     // if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(() => {
-        let _turnSeatNumber = getNextPlayerSeatNumber(_seatNumber);
-        let _tuenPlayerID = getPlayerIDBySeatNumber(_turnSeatNumber);
-        send(_tuenPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
+        let _nextTurnSeatNumber = getNextPlayerSeatNumber(_seatNumber);
+        let _nextTurnPlayerID = getPlayerIDBySeatNumber(_nextTurnSeatNumber);
+        send(_nextTurnPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: playerCardsDic[_nextTurnSeatNumber] });
     }, 500);
 }
 this.playCards_S2C = function (playerID, data) {
@@ -278,6 +307,10 @@ function resetWhenGameEnd() {
     isTrickEnd = true;
     readyPlayerCount = 0;
     playerIDArr.length = 0;
+    calledCompeteLordScoreArr.length = 0;
+    maxCalledLordScore = 0;
+    lordRoleSeat = 0;
+    lordRolePlayerID = 0;
 }
 /* function botPlayCards(_preCardsArr, seatNumber) {
     checkIsTrickEnd(seatNumber);
@@ -348,6 +381,10 @@ function getPlayerIDBySeatNumber(seatNumber) {
         if (seatNumber == _seatNumber) return _socket.id;
     }
     return null;
+}
+
+function broadMsg(msgStr) {
+    broadcast(card_game_pb.Cmd.BROADCAST_MSG_S2C, { "msg": msgStr });
 }
 
 

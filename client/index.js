@@ -69,6 +69,20 @@ function decodeData(buffer) {
             }
             if (_this.gameStart_S2C) _this.gameStart_S2C(_data);
             break;
+        case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C:
+            _data = card_game_pb.CompeteForLandLordRole_S2C.deserializeBinary(_bytesData);
+            _data = {
+                curMaxScore: _data.getCurMaxScore()
+            }
+            if (_this.competeForLandLordRole_S2C) _this.competeForLandLordRole_S2C(_data);
+            break;
+        case card_game_pb.Cmd.BROADCAST_MSG_S2C:
+            _data = card_game_pb.BroadCastMsg_S2C.deserializeBinary(_bytesData);
+            _data = {
+                msg: _data.getMsg()
+            }
+            if (_this.broadCastMsg_S2C) _this.broadCastMsg_S2C(_data);
+            break;
         default:
             console.log("no message matched.")
     }
@@ -117,7 +131,11 @@ this.dealCards_S2C = function (data) {
     mCardsArr = sortByValue(_cards);
     let _myHandCardsShowArr = convert2ReadableNames(mCardsArr);
     console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
-    console.log('Select a score to confirm role (you can input 1|2|3, the one who select the biggest number will be the land lord, and the base score is the selected number.): ');
+}
+this.competeForLandLordRole_S2C = function (data) {
+    let _curMaxScore = data.curMaxScore;
+    let _scoreCanBeSelectedStr = "123".slice(_curMaxScore).split("").join("|");
+    console.log(`Select a score to confirm role (you can input ${_scoreCanBeSelectedStr}, the one who select the biggest number will be the land lord, and the base score is the selected number.): `);
     const _score = getInputFromCmd();
     this.competeForLandLordRole_C2S(_score);
 }
@@ -128,10 +146,10 @@ this.playCards_C2S = function () {
     let _inputContent = getInputFromCmd();
     if (_inputContent == "" || checkIsCardsLegal(_inputContent)) {
         let _cardsNumberArr = _inputContent == "" ? [] : convert2CardNumbers(_inputContent.split(","));
-        send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { 'cards': _cardsNumberArr, 'seatNumber': 0 } });
+        send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: _cardsNumberArr, seatNumber: _this.seatNumber } });
     } else {
         console.log("Illegal cards, please select your cards again.")
-        playTurn({ seatNumber: seatNumber });
+        playTurn({ seatNumber: _this.seatNumber });
     }
 }
 this.playCards_S2C = function (data) {
@@ -145,11 +163,11 @@ this.playCards_S2C = function (data) {
 }
 this.illegalCards_S2C = function (data) {
     console.log("Illegal Cards.");
-    playTurn({ seatNumber: seatNumber });
+    playTurn({ seatNumber: _this.seatNumber });
 }
 this.gameEnd_S2C = function (data) {
     let _winnerSeatNumber = data.seatNumber;
-    let _isWin = _winnerSeatNumber === seatNumber;
+    let _isWin = _winnerSeatNumber === _this.seatNumber;
     let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
     console.log(_content);
     resetWhenGameEnd();
@@ -161,11 +179,11 @@ this.gameEnd_S2C = function (data) {
 
 this.competeForLandLordRole_C2S = function (score) {
     console.log(`You has called ${score} score`);
-    send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: score, seatNumber: seatNumber } });
+    send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: score, seatNumber: _this.seatNumber } });
 }
 this.playTurn_S2C = function (data) {
     let _seatNumber = data.seatNumber;
-    if (_seatNumber == seatNumber) {
+    if (_seatNumber == _this.seatNumber) {
         //update hand cards
         if (data.handCards) mCardsArr = sortByValue(data.handCards);
         this.playCards_C2S();
@@ -175,8 +193,12 @@ this.gameStart_S2C = function (data) {
     let _seatNumber = data.seatNumber;
     let _playerID = data.playerID;
 
-    seatNumber = _seatNumber;
-    playerID = _playerID;
+    _this.seatNumber = _seatNumber;
+    _this.playerID = _playerID;
+}
+this.broadCastMsg_S2C = function (data) {
+    let _msg = data.msg;
+    console.log(_msg);
 }
 
 //====== data and custom function bellow ======
