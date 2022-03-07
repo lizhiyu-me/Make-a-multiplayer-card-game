@@ -2,13 +2,33 @@ const net = require('net');
 const readlineSync = require('readline-sync');
 const { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } = require('../share/helper');
 const card_game_pb = require("../share/proto/out/card-game_pb");
-var mSocket = new net.Socket();
+
+var ip = "127.0.0.1";
 var port = 8080;
+function joinServer() {
+    //input ip and port
+    console.log("Please input the ip and port you want to connect (e.g. 192.168.0.1:8080):")
+    let _ip_port = getInputFromCmd();
+    var _ip_port_reg = /^(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]):([0-9]|[1-9]\d|[1-9]\d{2}|[1-9]\d{3}|[1-5]\d{4}|6[0-4]\d{3}|65[0-4]\d{2}|655[0-2]\d|6553[0-5])$/;
+    if (!_ip_port_reg.test(_ip_port)) {
+        console.log("Wrong format, please input again.")
+        joinServer();
+    } else {
+        let _splited = _ip_port.split(":");
+        ip = _splited[0];
+        port = +_splited[1];
+    }
+}
+joinServer();
+var mSocket = new net.Socket();
 mSocket.connect({
-    host: '127.0.0.1',
+    host: ip,
     port: port
 }, onConnected);
 
+mSocket.on('connect', (buffer) => {
+    console.log("Server connected, waiting for other player join...");
+})
 mSocket.on('data', (buffer) => {
     decodeData(buffer);
 })

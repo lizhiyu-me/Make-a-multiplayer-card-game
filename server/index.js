@@ -1,8 +1,21 @@
 const net = require('net');
+const readlineSync = require('readline-sync');
 const { RuleChecker } = require('../share/rule-checker');
 const card_game_pb = require("../share/proto/out/card-game_pb");
 var socketDic = {};
 var port = 8080;
+var playerCount = 3;
+function selecetPlayerCount(){
+    console.log("Please input the player count (2 or 3) to create a server:");
+    let _playerCount = +getInputFromCmd();
+    if(_playerCount == 2 ||_playerCount == 3){
+        playerCount = _playerCount;
+    }else{
+        console.log("Wrong input, please input again.")
+        selecetPlayerCount();
+    }
+}
+selecetPlayerCount();
 const server = net.createServer();
 server.on("connection", (socket) => {
     let _id_seat = generatePlayerIDAndSeatNumber();
@@ -136,7 +149,6 @@ function broadcast(cmd, data) {
 
 //====== game logic bellow ======
 var playerCardsDic = {};
-var playerCount = 3;
 var initialCardCount = 17;
 var lordCardsCount = 3;
 this.dealCards_S2C = function () {
@@ -360,7 +372,9 @@ function broadMsg(msgStr) {
 }
 
 
-
+function getInputFromCmd() {
+    return readlineSync.question();
+}
 Array.prototype.shuffle = function () {
     var input = this;
     for (var i = input.length - 1; i >= 0; i--) {
