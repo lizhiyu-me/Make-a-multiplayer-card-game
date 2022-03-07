@@ -99,6 +99,7 @@ function encodeData(cmd, data) {
         case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C:
             _proto_struct_obj = new card_game_pb.CompeteForLandLordRole_S2C();
             _proto_struct_obj.setCurMaxScore(data.curMaxScore);
+            break;
         case card_game_pb.Cmd.BROADCAST_MSG_S2C:
             _proto_struct_obj = new card_game_pb.BroadCastMsg_S2C();
             _proto_struct_obj.setMsg(data.msg);
@@ -135,7 +136,7 @@ function broadcast(cmd, data) {
 
 //====== game logic bellow ======
 var playerCardsDic = {};
-var playerCount = 2;
+var playerCount = 3;
 var initialCardCount = 17;
 var lordCardsCount = 3;
 this.dealCards_S2C = function () {
@@ -170,9 +171,10 @@ var readyPlayerCount = 0;
 this.ready_C2S = function () {
     readyPlayerCount++;
     if (readyPlayerCount == playerCount) {
+        resetGameRoundData();
+        
         mIsGaming = true;
         roundStart();
-
         let _firstCompeteLordPlayerSeatNumber = Math.floor(Math.random() * playerCount);
         let _playerID = getPlayerIDBySeatNumber(_firstCompeteLordPlayerSeatNumber);
         send(_playerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: maxCalledLordScore });
@@ -213,7 +215,7 @@ this.playCards_C2S = function (playerID, data) {
     let _canPlay = false;
     if (_cardsNumberArr.length == 0) {//pass
         _canPlay = true;
-        _this.playCards_S2C(playerID, { cards: [], seatNumber: _seatNumber });
+        _this.playCards_S2C({ cards: [], seatNumber: _seatNumber });
         preCardsArr = [];
         preCardsType = -1;
         prePlayerSeat = _seatNumber;
@@ -242,23 +244,21 @@ this.playCards_C2S = function (playerID, data) {
             preCardsArr = _cardsNumberArr;
             preCardsType = _curCardsType;
             prePlayerSeat = _seatNumber;
-            _this.playCards_S2C(playerID, { cards: preCardsArr, seatNumber: _seatNumber });
+            _this.playCards_S2C({ cards: preCardsArr, seatNumber: _seatNumber });
         } else {
             console.log("Illegal cards");
             send(playerID, card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
         }
     }
-    // if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(botPlayCards, 500, ...[preCardsArr, getNextPlayerSeatNumber(_seatNumber)]);
     if (_canPlay && playerCardsDic[_seatNumber].length != 0) setTimeout(() => {
         let _nextTurnSeatNumber = getNextPlayerSeatNumber(_seatNumber);
         let _nextTurnPlayerID = getPlayerIDBySeatNumber(_nextTurnSeatNumber);
         send(_nextTurnPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: playerCardsDic[_nextTurnSeatNumber] });
     }, 500);
 }
-this.playCards_S2C = function (playerID, data) {
-    removePlayerCards(playerID, data.cards, data.seatNumber);
+this.playCards_S2C = function (data) {
+    removePlayerCards(data.cards, data.seatNumber);
     broadcast(card_game_pb.Cmd.PLAYCARDS_S2C, data);
-    // send(playerID, card_game_pb.Cmd.PLAYCARDS_S2C, data);
 }
 //====== data and custom function bellow ======
 var preCardsArr = [];
@@ -272,7 +272,7 @@ function checkIsTrickEnd(seat) {
         preCardsType = -1;
     }
 }
-function removePlayerCards(playerID, playedCards, seatNumber) {
+function removePlayerCards(playedCards, seatNumber) {
     let _handCardsArr = playerCardsDic[seatNumber];
     for (let i = 0; i < playedCards.length; i++) {
         let item = playedCards[i];
@@ -280,8 +280,8 @@ function removePlayerCards(playerID, playedCards, seatNumber) {
         _handCardsArr.splice(_idx, 1);
     }
     if (_handCardsArr.length === 0) {
-        send(playerID, card_game_pb.Cmd.GAMEEND_S2C, { seatNumber: seatNumber });
-        resetWhenGameEnd();
+        broadcast(card_game_pb.Cmd.GAMEEND_S2C, { seatNumber: seatNumber });
+        resetGameRoundData();
     }
     return _handCardsArr;
 }
@@ -300,7 +300,7 @@ function checkHasCards(cardsNumberArr, seatNumber) {
     return _res;
 }
 var mIsGaming = false;
-function resetWhenGameEnd() {
+function resetGameRoundData() {
     mIsGaming = false;
     preCardsArr.length = 0;
     preCardsType = -1;
@@ -312,34 +312,6 @@ function resetWhenGameEnd() {
     lordRoleSeat = 0;
     lordRolePlayerID = 0;
 }
-/* function botPlayCards(_preCardsArr, seatNumber) {
-    checkIsTrickEnd(seatNumber);
-    let _botCards = playerCardsDic[seatNumber];
-    let _botPlayCardArr;
-    if (preCardsType === -1) {
-        _botPlayCardArr = [_botCards[0]];
-        preCardsArr = _botPlayCardArr;
-        preCardsType = 1;
-        _this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
-    } else {
-        _botPlayCardArr = RuleChecker.HelpCard(_botCards, _preCardsArr, preCardsType);
-        if (_botPlayCardArr.length != 0) {
-            preCardsArr = _botPlayCardArr;
-            preCardsType = ~~Object.keys(RuleChecker.CheckCardType(_botPlayCardArr, -1))[0];
-            prePlayerSeat = seatNumber;
-            _this.playCards_S2C({ cards: preCardsArr, seatNumber: seatNumber });
-        } else {
-            _this.playCards_S2C({ cards: [], seatNumber: seatNumber });
-        }
-    }
-    setTimeout(() => {
-        let _turnSeatNumber = getNextPlayerSeatNumber(seatNumber);
-        if (_turnSeatNumber == 0) send(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _turnSeatNumber, handCards: playerCardsDic[_turnSeatNumber] });
-        else {
-            botPlayCards(preCardsArr, _turnSeatNumber);
-        }
-    }, 500);
-} */
 function getNextPlayerSeatNumber(preSeatNumber) {
     let _cur = preSeatNumber + 1;
     if (_cur >= playerCount) {
