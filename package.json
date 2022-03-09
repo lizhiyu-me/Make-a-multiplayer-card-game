@@ -19,6 +19,7 @@
   "homepage": "https://github.com/lizhiyu-me/Make-a-multiplayer-card-game#readme",
   "dependencies": {
     "google-protobuf": "^3.19.4",
+    "protobufjs": "~6.11.2",
     "readline-sync": "^1.4.10"
   }
 }

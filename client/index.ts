@@ -1,8 +1,8 @@
-const fs = require('fs');
-const net = require('net');
-const readlineSync = require('readline-sync');
-const { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } = require('../share/helper');
-const card_game_pb = require("../share/proto/out/card-game_pb");
+import fs from 'fs';
+import net from 'net';
+import readlineSync from 'readline-sync';
+import { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } from '../share/helper';
+import card_game_pb from "../share/proto/out/card-game_pb";
 
 let _welcomeImage = `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,@%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -2,7 +2,7 @@
  * * rJkr for redJoker
  * * bJkr for blackJoker
  */
-var cardNameNumberDic = {
+export var cardNameNumberDic: { [key: string]: number } = {
     'rJkr': 0x0f,
     'bJkr': 0x0e,
     '2': 0x02,
@@ -29,7 +29,7 @@ var cardNameNumberDic = {
  * * rJkr for redJoker
  * * bJkr for blackJoker
  */
-var cardNumberNameDic = {
+export var cardNumberNameDic: { [key: number]: string } = {
     0x0f: 'rJkr',
     0x0e: 'bJkr',
     0x02: '2',
@@ -46,13 +46,13 @@ var cardNumberNameDic = {
     0x04: '4',
     0x03: '3'
 }
-function getCardReadableName(cardNumber) {
+export function getCardReadableName(cardNumber): string {
     let _cardNumber = Number(cardNumber);
     let _value = _cardNumber % 0x10;
     return cardNumberNameDic[_value];
 }
 
-function convert2ReadableNames(cardsArr) {
+export function convert2ReadableNames(cardsArr): string[] {
     let _res = [];
     for (let i = 0, len = cardsArr.length; i < len; i++) {
         let _cardNumber = cardsArr[i];
@@ -60,7 +60,7 @@ function convert2ReadableNames(cardsArr) {
     }
     return _res;
 }
-function convert2CardNumbers(cardNames) {
+export function convert2CardNumbers(cardNames): number[] {
     let _res = [];
     for (let i = 0, len = cardNames.length; i < len; i++) {
         let _cardName = cardNames[i];
@@ -68,5 +68,3 @@ function convert2CardNumbers(cardNames) {
     }
     return _res;
 }
-
-module.exports = { cardNameNumberDic, cardNumberNameDic, getCardReadableName, convert2ReadableNames, convert2CardNumbers }
