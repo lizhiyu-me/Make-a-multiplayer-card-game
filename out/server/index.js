@@ -1,9 +1,7 @@
-"use strict";
-exports.__esModule = true;
-var net = require("net");
-var readlineSync = require("readline-sync");
-var rule_checker_1 = require("../share/rule-checker");
-var card_game_pb = require("../share/proto/card-game");
+import * as net from 'net';
+import * as readlineSync from 'readline-sync';
+import { RuleChecker } from '../share/rule-checker';
+import * as card_game_pb from "../share/proto/card-game";
 var socketDic = {};
 var port = 8080;
 var playerCount = 3;
@@ -214,14 +212,14 @@ function playCards_C2S(playerID, data) {
         }
         var _curCardsType = -1;
         if (preCardsType === -1) {
-            var _res = Object.keys(rule_checker_1.RuleChecker.CheckCardType(_cardsNumberArr, -1));
+            var _res = Object.keys(RuleChecker.CheckCardType(_cardsNumberArr, -1));
             if (_res.length != 0) {
                 _curCardsType = ~~_res[0];
                 _canPlay = true;
             }
         }
         else {
-            var _res = rule_checker_1.RuleChecker.CheckCard(_cardsNumberArr, preCardsArr, preCardsType);
+            var _res = RuleChecker.CheckCard(_cardsNumberArr, preCardsArr, preCardsType);
             if (_res['isOK']) {
                 _curCardsType = ~~_res.cardsType[0];
                 _canPlay = true;
@@ -365,3 +363,4 @@ var POKER_VALUES = [
     0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D,
     0x4E, 0x4F,
 ];
+//# sourceMappingURL=index.js.map
