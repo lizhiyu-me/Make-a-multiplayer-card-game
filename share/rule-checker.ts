@@ -1,4 +1,4 @@
-var RuleChecker = /** @class */ (function () {
+ export var RuleChecker = /** @class */ (function () {
     function RuleChecker() {
     }
     RuleChecker.getCardValue = function (cardSerialNo) {
@@ -19,14 +19,14 @@ var RuleChecker = /** @class */ (function () {
         }
         return resNum;
     };
-    RuleChecker.CheckCard = function (cardListArr, pcardListArr, cardsType, handCardsCount) {
+    RuleChecker.CheckCard = function (cardListArr, pcardListArr, cardsType) {
         var result = { isOK: false, cardsType: [] };
         var mcardsTypeObj = RuleChecker.CheckCardType(cardListArr, cardsType);
         var cardsTypeArr = Object.keys(mcardsTypeObj);
         cardsTypeArr = this.getNumberArray(cardsTypeArr.join(","));
         if (cardsTypeArr.length == 0)
             return result;
-        var mcardsType = cardsTypeArr[0]; 
+        var mcardsType = +cardsTypeArr[0]; 
         if (mcardsType == CardType.CT_MISSILE_CARD || (mcardsType == CardType.CT_BOMB_CARD && cardsType < CardType.CT_BOMB_CARD)) {
             result["isOK"] = true;
             result["cardsType"] = [mcardsType];
@@ -578,7 +578,7 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
         }
-        for (var i = 0, len = orderValueArr.length; i < len; i++) {
+        for (let i = 0, len = orderValueArr.length; i < len; i++) {
             if (orderValueArr[i] >= 16 || orderValueArr[i] == 15) {
                 orderValueArr.splice(i, 1);
                 i--;
@@ -676,7 +676,7 @@ var RuleChecker = /** @class */ (function () {
         });
         return res;
     };
-    RuleChecker.getCopyObj = function (obj1, obj2) {
+    RuleChecker.getCopyObj = function (obj1, obj2?) {
         if (obj2 === void 0) { obj2 = {}; }
         for (var objItem in obj1) {
             if (typeof obj1[objItem] === "object") {
@@ -748,7 +748,7 @@ var RuleChecker = /** @class */ (function () {
         resArr = resArr1.concat(resArr2);
         return resArr;
     };
-    RuleChecker.shiftNeedlessCardsForPureThreeFly = function (valueList, cardNum) {
+    RuleChecker.shiftNeedlessCardsForPureThreeFly = function (valueList, cardNum?) {
         if (cardNum === void 0) { cardNum = 3; }
         var valueListRes = [];
         for (var i in valueList) {
@@ -759,7 +759,7 @@ var RuleChecker = /** @class */ (function () {
                 }
             }
         }
-        for (var i = 0; i < valueListRes.length; i++) {
+        for (let i = 0; i < valueListRes.length; i++) {
             if (i == 0) {
                 if (RuleChecker.getCardValue(valueListRes[i][0]) + 1 != RuleChecker.getCardValue(valueListRes[i + 1][0])) {
                     valueListRes.splice(i, 1);
@@ -780,7 +780,7 @@ var RuleChecker = /** @class */ (function () {
         }
         return res;
     };
-    RuleChecker.shiftNeedlessCardsForPureThree = function (valueList, cardNum) {
+    RuleChecker.shiftNeedlessCardsForPureThree = function (valueList, cardNum?) {
         if (cardNum === void 0) { cardNum = 3; }
         var valueListRes = [];
         for (var i in valueList) {
@@ -793,7 +793,7 @@ var RuleChecker = /** @class */ (function () {
         }
         return valueListRes;
     };
-    RuleChecker.shiftNeedlessCardsForPureFour = function (valueList, cardNum) {
+    RuleChecker.shiftNeedlessCardsForPureFour = function (valueList, cardNum?) {
         if (cardNum === void 0) { cardNum = 4; }
         var valueListRes = [];
         for (var i in valueList) {
@@ -1004,10 +1004,10 @@ var RuleChecker = /** @class */ (function () {
         }
         if (result.length >= 4) {
             var indexArr = [];
-            for (var i = 1; i < 4; i++) {
+            for (let i = 1; i < 4; i++) {
                 indexArr.push(RuleChecker.getIndexArrayOfNum(valueList1, i));
             }
-            for (var i = 0; i < indexArr.length; i++) {
+            for (let i = 0; i < indexArr.length; i++) {
                 var numIndexArr = indexArr[i];
                 if (numIndexArr.length != 0) {
                     for (var j = 0; j < numIndexArr.length; j++) {
@@ -1048,7 +1048,7 @@ var RuleChecker = /** @class */ (function () {
         if (result.length >= 4) {
             var indexArr = [];
             indexArr.push(RuleChecker.getIndexArrayOfNum(valueList1, 2));
-            for (var i = 0; i < indexArr.length; i++) {
+            for (let i = 0; i < indexArr.length; i++) {
                 var numIndexArr = indexArr[i];
                 if (numIndexArr.length != 0) {
                     for (var j = 0; j < numIndexArr.length; j++) {
@@ -1427,7 +1427,7 @@ var RuleChecker = /** @class */ (function () {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var pureThreeFlyValueList;
         var cardListRes = [];
-        cardListArr = cardList;
+        // cardListArr = cardList;
         pureThreeFlyValueList = this.shiftNeedlessCardsForPureThreeFly(valueList, 3);
         for (var j = 0, len = pureThreeFlyValueList.length; j < len; j++) {
             cardListRes.push(pureThreeFlyValueList[j]);
@@ -1525,7 +1525,7 @@ var RuleChecker = /** @class */ (function () {
         var valueList = RuleChecker.getCardValueArray(cardList);
         var pureFourFlyValueList;
         var cardListRes = [];
-        cardListArr = cardList;
+        // cardListArr = cardList;
         pureFourFlyValueList = this.shiftNeedlessCardsForPureThreeFly(valueList, 4);
         for (var j = 0, len = pureFourFlyValueList.length; j < len; j++) {
             cardListRes.push(pureFourFlyValueList[j]);
@@ -1589,5 +1589,3 @@ var CardType = /** @class */ (function () {
     ];
     return CardType;
 }());
-
-module.exports = {RuleChecker,CardType}

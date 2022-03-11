@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { util, configure, Writer, Reader } from "../../node_modules/protobufjs/minimal";
-import * as Long from "long";
+import Long from "long";
+import _m0 from "protobufjs/minimal";
+
 export const protobufPackage = "";
 
 export enum Cmd {
@@ -155,7 +156,10 @@ function createBaseMainMessage(): MainMessage {
 }
 
 export const MainMessage = {
-  encode(message: MainMessage, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: MainMessage,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.cmdId !== 0) {
       writer.uint32(8).uint32(message.cmdId);
     }
@@ -165,8 +169,8 @@ export const MainMessage = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): MainMessage {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): MainMessage {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMainMessage();
     while (reader.pos < end) {
@@ -220,7 +224,10 @@ function createBaseDealCardsS2C(): DealCardsS2C {
 }
 
 export const DealCardsS2C = {
-  encode(message: DealCardsS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: DealCardsS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     writer.uint32(10).fork();
     for (const v of message.cards) {
       writer.uint32(v);
@@ -232,8 +239,8 @@ export const DealCardsS2C = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): DealCardsS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): DealCardsS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDealCardsS2C();
     while (reader.pos < end) {
@@ -296,15 +303,18 @@ function createBaseReadyC2S(): ReadyC2S {
 }
 
 export const ReadyC2S = {
-  encode(message: ReadyC2S, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: ReadyC2S,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): ReadyC2S {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): ReadyC2S {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseReadyC2S();
     while (reader.pos < end) {
@@ -348,8 +358,8 @@ function createBaseCompeteForLandLordRoleC2S(): CompeteForLandLordRoleC2S {
 export const CompeteForLandLordRoleC2S = {
   encode(
     message: CompeteForLandLordRoleC2S,
-    writer: Writer = Writer.create()
-  ): Writer {
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.score !== 0) {
       writer.uint32(8).uint32(message.score);
     }
@@ -360,10 +370,10 @@ export const CompeteForLandLordRoleC2S = {
   },
 
   decode(
-    input: Reader | Uint8Array,
+    input: _m0.Reader | Uint8Array,
     length?: number
   ): CompeteForLandLordRoleC2S {
-    const reader = input instanceof Reader ? input : new Reader(input);
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCompeteForLandLordRoleC2S();
     while (reader.pos < end) {
@@ -415,8 +425,8 @@ function createBaseCompeteForLandLordRoleS2C(): CompeteForLandLordRoleS2C {
 export const CompeteForLandLordRoleS2C = {
   encode(
     message: CompeteForLandLordRoleS2C,
-    writer: Writer = Writer.create()
-  ): Writer {
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.curMaxScore !== 0) {
       writer.uint32(16).uint32(message.curMaxScore);
     }
@@ -424,10 +434,10 @@ export const CompeteForLandLordRoleS2C = {
   },
 
   decode(
-    input: Reader | Uint8Array,
+    input: _m0.Reader | Uint8Array,
     length?: number
   ): CompeteForLandLordRoleS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCompeteForLandLordRoleS2C();
     while (reader.pos < end) {
@@ -471,7 +481,10 @@ function createBasePlayCardsC2S(): PlayCardsC2S {
 }
 
 export const PlayCardsC2S = {
-  encode(message: PlayCardsC2S, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: PlayCardsC2S,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     writer.uint32(10).fork();
     for (const v of message.cards) {
       writer.uint32(v);
@@ -483,8 +496,8 @@ export const PlayCardsC2S = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): PlayCardsC2S {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): PlayCardsC2S {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePlayCardsC2S();
     while (reader.pos < end) {
@@ -547,7 +560,10 @@ function createBasePlayCardsS2C(): PlayCardsS2C {
 }
 
 export const PlayCardsS2C = {
-  encode(message: PlayCardsS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: PlayCardsS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     writer.uint32(10).fork();
     for (const v of message.cards) {
       writer.uint32(v);
@@ -559,8 +575,8 @@ export const PlayCardsS2C = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): PlayCardsS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): PlayCardsS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePlayCardsS2C();
     while (reader.pos < end) {
@@ -623,15 +639,18 @@ function createBaseIllegalCardsS2C(): IllegalCardsS2C {
 }
 
 export const IllegalCardsS2C = {
-  encode(message: IllegalCardsS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: IllegalCardsS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): IllegalCardsS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): IllegalCardsS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseIllegalCardsS2C();
     while (reader.pos < end) {
@@ -675,15 +694,18 @@ function createBaseGameEndS2C(): GameEndS2C {
 }
 
 export const GameEndS2C = {
-  encode(message: GameEndS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: GameEndS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GameEndS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): GameEndS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGameEndS2C();
     while (reader.pos < end) {
@@ -727,7 +749,10 @@ function createBasePlayTurnS2C(): PlayTurnS2C {
 }
 
 export const PlayTurnS2C = {
-  encode(message: PlayTurnS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: PlayTurnS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
@@ -739,8 +764,8 @@ export const PlayTurnS2C = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): PlayTurnS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): PlayTurnS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePlayTurnS2C();
     while (reader.pos < end) {
@@ -803,7 +828,10 @@ function createBaseGameStartS2C(): GameStartS2C {
 }
 
 export const GameStartS2C = {
-  encode(message: GameStartS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: GameStartS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
@@ -813,8 +841,8 @@ export const GameStartS2C = {
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): GameStartS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): GameStartS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGameStartS2C();
     while (reader.pos < end) {
@@ -865,15 +893,18 @@ function createBaseBroadCastMsgS2C(): BroadCastMsgS2C {
 }
 
 export const BroadCastMsgS2C = {
-  encode(message: BroadCastMsgS2C, writer: Writer = Writer.create()): Writer {
+  encode(
+    message: BroadCastMsgS2C,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.msg !== "") {
       writer.uint32(10).string(message.msg);
     }
     return writer;
   },
 
-  decode(input: Reader | Uint8Array, length?: number): BroadCastMsgS2C {
-    const reader = input instanceof Reader ? input : new Reader(input);
+  decode(input: _m0.Reader | Uint8Array, length?: number): BroadCastMsgS2C {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBroadCastMsgS2C();
     while (reader.pos < end) {
@@ -972,11 +1003,9 @@ export type Exact<P, I extends P> = P extends Builtin
         never
       >;
 
-// If you get a compile-error about 'Constructor<Long> and ... have no overlap',
-// add '--ts_proto_opt=esModuleInterop=true' as a flag when calling 'protoc'.
-if (util.Long !== Long) {
-  util.Long = Long as any;
-  configure();
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
 }
 
 function isSet(value: any): boolean {

@@ -5,11 +5,11 @@ import * as card_game_pb from "../share/proto/card-game";
 var socketDic = {};
 var port = 8080;
 var playerCount = 3;
-console.log(this);
 function selecetPlayerCount() {
     console.log(this);
     console.log("Please input the player count (2 or 3) to create a server:");
-    let _playerCount = +getInputFromCmd();
+    let _playerCountStr = getInputFromCmd();
+    let _playerCount = +_playerCountStr;
     if (_playerCount == 2 || _playerCount == 3) {
         playerCount = _playerCount;
     } else {
