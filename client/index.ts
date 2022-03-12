@@ -2,6 +2,8 @@ import * as net from 'net';
 import * as readlineSync from 'readline-sync';
 import { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } from '../share/helper';
 import * as card_game_pb from "../share/proto/card-game";
+import { stdout as log_single_line } from 'single-line-log';
+
 export default class Client {
     private _welcomeImage = `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,@%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,10 +48,11 @@ export default class Client {
         this.mSocket.connect({
             host: this.ip,
             port: this.port
-        },_this.onConnected.bind(_this));
+        }, _this.onConnected.bind(_this));
 
         this.mSocket.on('connect', (buffer) => {
-            console.log("Server connected, waiting for other player join...");
+            // console.log("Server connected, waiting for other player join...");
+            this.showWaiting("Server connected, waiting for other player join");
         })
         this.mSocket.on('data', (buffer) => {
             _this.decodeData(buffer);
@@ -94,6 +97,7 @@ export default class Client {
                 this.playTurn_S2C(card_game_pb.PlayTurnS2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.GAMESTART_S2C:
+                this.stopWaiting();
                 this.gameStart_S2C(card_game_pb.GameStartS2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C:
@@ -259,6 +263,33 @@ export default class Client {
     private resetWhenGameEnd() {
         this.seatNumber = null;
         this.playerID = null;
+    }
+
+    private mIsShowWaiting: boolean = false;
+    private showWaiting(contentStr: string) {
+        this.mIsShowWaiting = true;
+        this.consoleLogDotDotDotAnimationWith(contentStr);
+    }
+    private stopWaiting() {
+        this.mIsShowWaiting = false;
+    }
+    private consoleLogDotDotDotAnimationWith(contentStr: string) {
+        var a = [".", "..", "..."];
+        var step = 0;
+        let _this = this;
+        function show() {
+            if (!_this.mIsShowWaiting){
+                log_single_line.clear();
+                return;
+            } 
+            if (step >= a.length) step = 0;
+            log_single_line(contentStr + a[step]+"\n");
+            step++;
+            setTimeout(() => {
+                show();
+            }, 400)
+        }
+        show();
     }
 }
 
