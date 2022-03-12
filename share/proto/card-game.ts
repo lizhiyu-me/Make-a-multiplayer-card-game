@@ -117,6 +117,7 @@ export interface CompeteForLandLordRoleC2S {
 
 export interface CompeteForLandLordRoleS2C {
   curMaxScore: number;
+  seatNumber: number;
 }
 
 export interface PlayCardsC2S {
@@ -419,7 +420,7 @@ export const CompeteForLandLordRoleC2S = {
 };
 
 function createBaseCompeteForLandLordRoleS2C(): CompeteForLandLordRoleS2C {
-  return { curMaxScore: 0 };
+  return { curMaxScore: 0, seatNumber: 0 };
 }
 
 export const CompeteForLandLordRoleS2C = {
@@ -428,7 +429,10 @@ export const CompeteForLandLordRoleS2C = {
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.curMaxScore !== 0) {
-      writer.uint32(16).uint32(message.curMaxScore);
+      writer.uint32(8).uint32(message.curMaxScore);
+    }
+    if (message.seatNumber !== 0) {
+      writer.uint32(16).uint32(message.seatNumber);
     }
     return writer;
   },
@@ -443,8 +447,11 @@ export const CompeteForLandLordRoleS2C = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 2:
+        case 1:
           message.curMaxScore = reader.uint32();
+          break;
+        case 2:
+          message.seatNumber = reader.uint32();
           break;
         default:
           reader.skipType(tag & 7);
@@ -457,6 +464,7 @@ export const CompeteForLandLordRoleS2C = {
   fromJSON(object: any): CompeteForLandLordRoleS2C {
     return {
       curMaxScore: isSet(object.curMaxScore) ? Number(object.curMaxScore) : 0,
+      seatNumber: isSet(object.seatNumber) ? Number(object.seatNumber) : 0,
     };
   },
 
@@ -464,6 +472,8 @@ export const CompeteForLandLordRoleS2C = {
     const obj: any = {};
     message.curMaxScore !== undefined &&
       (obj.curMaxScore = Math.round(message.curMaxScore));
+    message.seatNumber !== undefined &&
+      (obj.seatNumber = Math.round(message.seatNumber));
     return obj;
   },
 
@@ -472,6 +482,7 @@ export const CompeteForLandLordRoleS2C = {
   ): CompeteForLandLordRoleS2C {
     const message = createBaseCompeteForLandLordRoleS2C();
     message.curMaxScore = object.curMaxScore ?? 0;
+    message.seatNumber = object.seatNumber ?? 0;
     return message;
   },
 };

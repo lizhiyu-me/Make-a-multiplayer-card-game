@@ -34,7 +34,8 @@ message CompeteForLandLordRole_C2S{
 }
 
 message CompeteForLandLordRole_S2C{
-    uint32 cur_max_score = 2;
+    uint32 cur_max_score = 1;
+    uint32 seat_number = 2;
 }
 
 message PlayCards_C2S{

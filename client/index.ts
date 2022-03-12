@@ -150,11 +150,17 @@ export default class Client {
         console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
     }
     private competeForLandLordRole_S2C(data) {
+        this.stopWaiting();
         let _curMaxScore = data.curMaxScore;
-        let _scoreCanBeSelectedStr = "123".slice(_curMaxScore).split("").join("|");
-        console.log(`Select a score to confirm role (you can input ${_scoreCanBeSelectedStr}, the one who select the biggest number will be the land lord, and the base score is the selected number.): `);
-        const _score = this.getInputFromCmd();
-        this.competeForLandLordRole_C2S(_score);
+        let _seatNumber = data.seatNumber;
+        if (_seatNumber == this.seatNumber) {
+            let _scoreCanBeSelectedStr = "123".slice(_curMaxScore).split("").join("|");
+            console.log(`Select a score to confirm role (you can input ${_scoreCanBeSelectedStr}, the one who select the biggest number will be the land lord, and the base score is the selected number.): `);
+            const _score = this.getInputFromCmd();
+            this.competeForLandLordRole_C2S(_score);
+        } else {
+            this.showWaiting(`Player ${_seatNumber} is calling score for land lord role`);
+        }
     }
     private playCards_C2S() {
         console.log('Now, your turn.');
@@ -170,6 +176,7 @@ export default class Client {
         }
     }
     private playCards_S2C(data) {
+        this.stopWaiting();
         let _cardsPlayed = data.cards;
         let _seatNumber = data.seatNumber;
         if (_cardsPlayed.length == 0) {
@@ -199,14 +206,18 @@ export default class Client {
         this.send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: score, seatNumber: this.seatNumber } });
     }
     private playTurn_S2C(data) {
+        this.stopWaiting();
         let _seatNumber = data.seatNumber;
         if (_seatNumber == this.seatNumber) {
             //update hand cards
             if (data.handCards) this.mCardsArr = this.sortByValue(data.handCards);
             this.playCards_C2S();
+        } else {
+            this.showWaiting(`Player ${_seatNumber} is considering`);
         }
     }
     private gameStart_S2C(data) {
+        console.log("Game start.");
         let _seatNumber = data.seatNumber;
         let _playerID = data.playerId;
 
@@ -273,19 +284,21 @@ export default class Client {
     private stopWaiting() {
         this.mIsShowWaiting = false;
     }
+    private mLogTimeout:NodeJS.Timeout;
     private consoleLogDotDotDotAnimationWith(contentStr: string) {
         var a = [".", "..", "..."];
         var step = 0;
         let _this = this;
         function show() {
-            if (!_this.mIsShowWaiting){
+            clearTimeout(_this.mLogTimeout);
+            if (!_this.mIsShowWaiting) {
                 log_single_line.clear();
                 return;
-            } 
+            }
             if (step >= a.length) step = 0;
-            log_single_line(contentStr + a[step]+"\n");
+            log_single_line(contentStr + a[step] + "\n");
             step++;
-            setTimeout(() => {
+            _this.mLogTimeout = setTimeout(() => {
                 show();
             }, 400)
         }

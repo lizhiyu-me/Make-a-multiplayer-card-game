@@ -177,8 +177,9 @@ export default class Server {
             this.mIsGaming = true;
             this.roundStart();
             let _firstCompeteLordPlayerSeatNumber = Math.floor(Math.random() * this.playerCount);
-            let _playerID = this.getPlayerIDBySeatNumber(_firstCompeteLordPlayerSeatNumber);
-            this.send(_playerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore });
+            // let _playerID = this.getPlayerIDBySeatNumber(_firstCompeteLordPlayerSeatNumber);
+            // this.send(_playerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore });
+            this.broadcast(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore })
         }
     }
     private calledCompeteLordScoreArr = [];
@@ -205,8 +206,9 @@ export default class Server {
             this.send(this.lordRolePlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: this.lordRoleSeat, handCards: this.playerCardsDic[this.lordRoleSeat] });
         } else {
             let _nextTurnSeat = this.getNextPlayerSeatNumber(_seatNumber);
-            let _nextPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeat);
-            this.send(_nextPlayerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: this.lordRoleSeat, curMaxScore: this.maxCalledLordScore });
+            // let _nextPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeat);
+            // this.send(_nextPlayerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: this.lordRoleSeat, curMaxScore: this.maxCalledLordScore });
+            this.broadcast(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _nextTurnSeat, curMaxScore: this.maxCalledLordScore });
         }
     }
     private playCards_C2S(playerID, data) {
@@ -253,8 +255,9 @@ export default class Server {
         }
         if (_canPlay && this.playerCardsDic[_seatNumber].length != 0) setTimeout(() => {
             let _nextTurnSeatNumber = this.getNextPlayerSeatNumber(_seatNumber);
-            let _nextTurnPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeatNumber);
-            this.send(_nextTurnPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
+            // let _nextTurnPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeatNumber);
+            // this.send(_nextTurnPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
+            this.broadcast(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
         }, 500);
     }
     private playCards_S2C(data) {
