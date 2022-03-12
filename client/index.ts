@@ -40,7 +40,7 @@ export default class Client {
     private port = 8080;
     private mSocket = new net.Socket();
     constructor() {
-        console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
+        // console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
         // this.joinServer();
         let _this = this;
         this.mSocket.connect({
