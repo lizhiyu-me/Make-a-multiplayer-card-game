@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start-server":"ts-node server/index.ts",
-    "start-client":"ts-node client/index.ts",
-    "start-server-demon":"ts-node server/index.ts",
-    "start-client-demon":"ts-node client/index.ts",
+    "start-server": "ts-node server/index.ts",
+    "start-client": "ts-node client/index.ts",
+    "start-server-demon": "ts-node server/index.ts",
+    "start-client-demon": "ts-node client/index.ts",
     "pbts-win": ".\\share\\proto\\protoc.exe --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd --ts_proto_opt=esModuleInterop=true --ts_proto_out=. .\\share\\proto\\card-game.proto",
     "pbts": "./share/proto/protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=esModuleInterop=true --ts_proto_out=. ./share/proto/card-game.proto",
     "test": "echo \"Error: no test specified\" && exit 1"
