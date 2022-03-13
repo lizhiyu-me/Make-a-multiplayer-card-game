@@ -2,7 +2,6 @@ import * as net from 'net';
 import * as readlineSync from 'readline-sync';
 import { convert2ReadableNames, convert2CardNumbers, cardNameNumberDic } from '../share/helper';
 import * as card_game_pb from "../share/proto/card-game";
-import { stdout as log_single_line } from 'single-line-log';
 
 export default class Client {
     private _welcomeImage = `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,8 +41,8 @@ export default class Client {
     private port = 8080;
     private mSocket = new net.Socket();
     constructor() {
-        // console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
-        // this.joinServer();
+        console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
+        this.joinServer();
         let _this = this;
         this.mSocket.connect({
             host: this.ip,
@@ -51,8 +50,7 @@ export default class Client {
         }, _this.onConnected.bind(_this));
 
         this.mSocket.on('connect', (buffer) => {
-            // console.log("Server connected, waiting for other player join...");
-            this.showWaiting("Server connected, waiting for other player join");
+            console.log("Server connected, waiting for other player join...");
         })
         this.mSocket.on('data', (buffer) => {
             _this.decodeData(buffer);
@@ -218,11 +216,8 @@ export default class Client {
     }
     private gameStart_S2C(data) {
         console.log("Game start.");
-        let _seatNumber = data.seatNumber;
-        let _playerID = data.playerId;
-
-        this.seatNumber = _seatNumber;
-        this.playerID = _playerID;
+        this.seatNumber = data.seatNumber;
+        // this.playerID = data.playerId;
     }
     private broadCastMsg_S2C(data) {
         let _msg = data.msg;
@@ -231,7 +226,7 @@ export default class Client {
 
     //====== data and custom private bellow ======
     private seatNumber;
-    private playerID;
+    // private playerID;
     private startGame() {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
@@ -273,18 +268,18 @@ export default class Client {
 
     private resetWhenGameEnd() {
         this.seatNumber = null;
-        this.playerID = null;
+        // this.playerID = null;
     }
 
-    private mIsShowWaiting: boolean = false;
+    // private mIsShowWaiting: boolean = false;
     private showWaiting(contentStr: string) {
-        this.mIsShowWaiting = true;
-        this.consoleLogDotDotDotAnimationWith(contentStr);
+        // this.mIsShowWaiting = true;
+        // this.consoleLogDotDotDotAnimationWith(contentStr);
     }
     private stopWaiting() {
-        this.mIsShowWaiting = false;
+        // this.mIsShowWaiting = false;
     }
-    private mLogTimeout:NodeJS.Timeout;
+    /* private mLogTimeout: NodeJS.Timeout;
     private consoleLogDotDotDotAnimationWith(contentStr: string) {
         var a = [".", "..", "..."];
         var step = 0;
@@ -303,7 +298,7 @@ export default class Client {
             }, 400)
         }
         show();
-    }
+    } */
 }
 
 new Client();

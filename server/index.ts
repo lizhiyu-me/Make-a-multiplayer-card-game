@@ -177,8 +177,6 @@ export default class Server {
             this.mIsGaming = true;
             this.roundStart();
             let _firstCompeteLordPlayerSeatNumber = Math.floor(Math.random() * this.playerCount);
-            // let _playerID = this.getPlayerIDBySeatNumber(_firstCompeteLordPlayerSeatNumber);
-            // this.send(_playerID, card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore });
             this.broadcast(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore })
         }
     }
@@ -253,12 +251,12 @@ export default class Server {
                 this.send(playerID, card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
             }
         }
-        if (_canPlay && this.playerCardsDic[_seatNumber].length != 0) setTimeout(() => {
-            let _nextTurnSeatNumber = this.getNextPlayerSeatNumber(_seatNumber);
-            // let _nextTurnPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeatNumber);
-            // this.send(_nextTurnPlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
-            this.broadcast(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
-        }, 500);
+        if (_canPlay && this.playerCardsDic[_seatNumber].length != 0 && this.mIsGaming){
+            setTimeout(() => {
+                let _nextTurnSeatNumber = this.getNextPlayerSeatNumber(_seatNumber);
+                this.broadcast(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
+            }, 500);
+        } 
     }
     private playCards_S2C(data) {
         this.removePlayerCards(data.cards, data.seatNumber);
@@ -349,7 +347,7 @@ export default class Server {
         }
     }
 
-    private getPlayerIDBySeatNumber(seatNumber) {
+    /* private getPlayerIDBySeatNumber(seatNumber) {
         let _keyArr = Object.keys(this.socketDic);
         for (let i = 0; i < _keyArr.length; i++) {
             let _socket = this.socketDic[_keyArr[i]];
@@ -357,7 +355,7 @@ export default class Server {
             if (seatNumber == _seatNumber) return _socket.id;
         }
         return null;
-    }
+    } */
 
     private broadMsg(msgStr) {
         this.broadcast(card_game_pb.Cmd.BROADCAST_MSG_S2C, { "msg": msgStr });

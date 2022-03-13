@@ -28,10 +28,8 @@
     "@types/node": "^17.0.21",
     "@types/protobufjs": "^6.0.0",
     "@types/readline-sync": "^1.4.4",
-    "@types/single-line-log": "^1.1.0",
     "protobufjs": "^6.11.2",
-    "readline-sync": "^1.4.10",
-    "single-line-log": "^1.1.2"
+    "readline-sync": "^1.4.10"
   },
   "devDependencies": {
     "nodemon": "^2.0.15",
