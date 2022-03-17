@@ -1,13 +1,13 @@
 import * as net from 'net';
 import * as  readlineSync from 'readline-sync';
-import { RuleChecker } from '../share/rule-checker';
+import Ruler from '../share/rule-checker/Ruler';
 import * as card_game_pb from "../share/proto/card-game";
+import { E_TYPE } from '../share/rule-checker/Config';
 export default class Server {
     private socketDic: { [playerID: number]: net.Socket } = {};
     private port = 8080;
     private playerCount = 3;
-    private mServer = net.createServer();
-    constructor() {
+    constructor(private mRuler = new Ruler(), private mServer = net.createServer()) {
         this.selectPlayerCount();
 
         this.mServer.on("connection", (socket: net.Socket) => {
@@ -229,15 +229,15 @@ export default class Server {
             }
             let _curCardsType = -1;
             if (this.preCardsType === -1) {
-                let _res = Object.keys(RuleChecker.CheckCardType(_cardsNumberArr, -1));
-                if (_res.length != 0) {
-                    _curCardsType = ~~_res[0];
+                let _type = this.mRuler.checkCardType(_cardsNumberArr);
+                if (_type != E_TYPE.ERROR) {
+                    _curCardsType = _type;
                     _canPlay = true;
                 }
             } else {
-                let _res = RuleChecker.CheckCard(_cardsNumberArr, this.preCardsArr, this.preCardsType);
-                if (_res['isOK']) {
-                    _curCardsType = ~~_res.cardsType[0];
+                let _res = this.mRuler.canDefeat(_cardsNumberArr, this.preCardsArr, this.preCardsType);
+                if (_res.can) {
+                    _curCardsType = _res.type;
                     _canPlay = true;
                 }
             }
@@ -251,12 +251,12 @@ export default class Server {
                 this.send(playerID, card_game_pb.Cmd.ILLEGALCARDS_S2C, {});
             }
         }
-        if (_canPlay && this.playerCardsDic[_seatNumber].length != 0 && this.mIsGaming){
+        if (_canPlay && this.playerCardsDic[_seatNumber].length != 0 && this.mIsGaming) {
             setTimeout(() => {
                 let _nextTurnSeatNumber = this.getNextPlayerSeatNumber(_seatNumber);
                 this.broadcast(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
             }, 500);
-        } 
+        }
     }
     private playCards_S2C(data) {
         this.removePlayerCards(data.cards, data.seatNumber);
