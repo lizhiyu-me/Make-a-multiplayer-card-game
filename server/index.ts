@@ -1,8 +1,10 @@
 import * as net from 'net';
 import * as  readlineSync from 'readline-sync';
-import Ruler from '../share/rule-checker/Ruler';
 import * as card_game_pb from "../share/proto/card-game";
-import { E_TYPE } from '../share/rule-checker/Config';
+import * as chinesePoker from "chinese-poker"
+
+const Ruler = chinesePoker["default"].Ruler;
+const E_TYPE = chinesePoker["default"].E_TYPE;
 export default class Server {
     private socketDic: { [playerID: number]: net.Socket } = {};
     private port = 8080;
