@@ -1,10 +1,9 @@
-import { puremvc } from "../lib/puremvc";
+import { puremvc } from "../../lib/puremvc";
 import { NetMediator } from "./NetMediator";
 
 export class NetFacade extends puremvc.Facade {
-    static NAME:string = "NetFacade";
     constructor() {
-        super(NetFacade.NAME);
+        super("NetFacade");
 
         this.registerMediator(new NetMediator());
     }
