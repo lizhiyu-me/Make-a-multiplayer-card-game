@@ -39,25 +39,45 @@ export default class Client {
 `;
     private ip = "127.0.0.1";
     private port = 8080;
-    private mSocket = new net.Socket();
+    private mSocket;
     constructor() {
-        console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
-        this.joinServer();
+        // this.joinServer();
+        // this.createSocket(this.ip, this.port);
+    }
+    
+    private createSocket(ip: string, port: number) {
         let _this = this;
-        this.mSocket.connect({
-            host: this.ip,
-            port: this.port
-        }, _this.onConnected.bind(_this));
+        if (typeof window === "undefined") {
+            this.mSocket = new (module.require("net").Socket)({
+                host: ip,
+                port: port
+            }, _this.onConnected.bind(_this));
+            
+            this.mSocket.on('connect', (buffer) => {
+                console.log(this._welcomeImage + "\n" + "Welcome to Fish Poker(摸鱼斗地主)");
+                console.log("Server connected, waiting for other player join...");
+            })
+            this.mSocket.on('data', (buffer) => {
+                _this.decodeData(buffer);
+            })
+            this.mSocket.on('error', (buffer) => {
+                console.log(buffer);
+            });
+        } else if (typeof WebSocket != "undefined") {
+            this.mSocket = new WebSocket("ws://" + ip + ":" + port);
 
-        this.mSocket.on('connect', (buffer) => {
-            console.log("Server connected, waiting for other player join...");
-        })
-        this.mSocket.on('data', (buffer) => {
-            _this.decodeData(buffer);
-        })
-        this.mSocket.on('error', (buffer) => {
-            console.log(buffer);
-        });
+            this.mSocket.on('open', (buffer) => {
+                console.log("Server connected, waiting for other player join...");
+            })
+            this.mSocket.on('message', (buffer) => {
+                _this.decodeData(buffer);
+            })
+            this.mSocket.on('error', (buffer) => {
+                console.log(buffer);
+            });
+        } else {
+            console.error("Fail to create a socket.")
+        }
     }
     private joinServer() {
         //input ip and port
