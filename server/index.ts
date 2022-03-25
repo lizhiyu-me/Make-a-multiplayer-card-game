@@ -1,15 +1,19 @@
-import * as net from 'net';
+import * as WebSocket from 'ws';
 import * as  readlineSync from 'readline-sync';
 import * as card_game_pb from "../share/proto/card-game";
-import {Ruler,E_TYPE} from "chinese-poker"
+import { Ruler, E_TYPE } from "chinese-poker"
 export default class Server {
-    private socketDic: { [playerID: number]: net.Socket } = {};
+    private socketDic: { [playerID: number]: WebSocket } = {};
     private port = 8080;
     private playerCount = 3;
-    constructor(private mRuler = new Ruler(), private mServer = net.createServer()) {
+    private mServer: WebSocket.Server;
+    constructor(private mRuler = new Ruler()) {
+        this.mServer = new WebSocket.Server({ port: this.port },()=>{
+            console.log(`server started at port ${this.port}`);
+        });
         this.selectPlayerCount();
 
-        this.mServer.on("connection", (socket: net.Socket) => {
+        this.mServer.on("connection", (socket: WebSocket) => {
             let _id_seat = this.generatePlayerIDAndSeatNumber();
             let _playerID = _id_seat.id;
             let _seatNumber = _id_seat.seat;
@@ -18,10 +22,6 @@ export default class Server {
             this.socketDic[_playerID] = socket;
 
             this.addSocketListener(socket);
-        })
-
-        this.mServer.listen(this.port, () => {
-            console.log(`server listening on 127.0.0.1:${this.port}`)
         });
     }
     private selectPlayerCount() {
@@ -36,15 +36,15 @@ export default class Server {
         }
     }
 
-    private addSocketListener(socket: net.Socket) {
-        socket.on('data', (data) => {
+    private addSocketListener(socket: WebSocket) {
+        socket.addEventListener('message', (data) => {
             let _playerID = socket["id"];
             this.decodeData(data, _playerID);
         });
-        socket.on('end', (socket) => {
-            console.log("end");
+        socket.addEventListener('close', (socket) => {
+            console.log("close");
         });
-        socket.on('error', (error) => {
+        socket.addEventListener('error', (error) => {
             console.log(error);
             console.log("player disconnected unexpectly, game end");
             if (this.mIsGaming) {
@@ -121,7 +121,7 @@ export default class Server {
         if (!this.mIsGaming) return;
         const _dataBuffer = this.encodeData(cmd, data);
         let _socket = this.socketDic[playerID];
-        if (_dataBuffer && !_socket.destroyed) _socket.write(_dataBuffer);
+        if (_dataBuffer && _socket.readyState == WebSocket.OPEN) _socket.send(_dataBuffer);
     }
     private broadcast(cmd, data) {
         if (!this.mIsGaming) return;
