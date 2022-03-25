@@ -1,4 +1,4 @@
-import { ip, port } from "../../config/globalConfig";
+import { ip, port } from "../../config/GlobalConfig";
 import Decoder from "./Decoder";
 export class Net {
     private static mDecoder = new Decoder()

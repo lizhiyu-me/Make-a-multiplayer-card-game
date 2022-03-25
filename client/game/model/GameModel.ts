@@ -5,10 +5,10 @@ export default class GameModel extends puremvc.Model {
         super("GameModel");
     }
     /**
- * * rJkr for redJoker
- * * bJkr for blackJoker
- */
-    cardNameNumberDic: { [key: string]: number } = {
+     * * rJkr for redJoker
+     * * bJkr for blackJoker
+     */
+    readonly cardNameNumberDic: { readonly [key: string]: number } = {
         'rJkr': 0x0f,
         'bJkr': 0x0e,
         '2': 0x02,
@@ -35,7 +35,7 @@ export default class GameModel extends puremvc.Model {
      * * rJkr for redJoker
      * * bJkr for blackJoker
      */
-    cardNumberNameDic: { [key: number]: string } = {
+    readonly cardNumberNameDic: { readonly [key: number]: string } = {
         0x0f: 'rJkr',
         0x0e: 'bJkr',
         0x02: '2',
