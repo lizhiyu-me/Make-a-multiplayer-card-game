@@ -1,11 +1,9 @@
+import { E_COMMON_MEDIATOR_EVENT } from './../CommonMediator';
 import * as card_game_pb from "../../../share/proto/card-game";
 import { puremvc } from "../../lib/puremvc";
-import { NetFacade } from "./NetFacade";
+import CommonMediator from "../CommonMediator";
 export default class Decoder {
-    static NAME: string = "Decoder"
-    constructor() {
-    }
-
+    constructor() {}
     decodeData(buffer) {
         let _mainMsg: card_game_pb.MainMessage = card_game_pb.MainMessage.decode(buffer);
         let _cmd = _mainMsg.cmdId;
@@ -39,8 +37,10 @@ export default class Decoder {
                 console.log("no message matched.")
         }
     }
-
     private emitEvent(cmd, data) {
         puremvc.Facade.getInstance("NetFacade").sendNotification(cmd, data);
+    }
+    serverConnected(){
+        puremvc.Facade.getInstance("GameFacade").sendNotification(CommonMediator.eventObj[E_COMMON_MEDIATOR_EVENT.SERVER_CONNECTED]);   
     }
 }

@@ -2,54 +2,35 @@ import GameModel from '../model/GameModel';
 import { puremvc } from "../../lib/puremvc";
 import * as card_game_pb from "../../../share/proto/card-game";
 import { Net } from './Net';
+import Encoder from './Encoder';
 
 export class NetMediator extends puremvc.Mediator {
-    constructor() {
+    constructor(private mEncoder = new Encoder()) {
         super("NetMediator");
     }
     listNotificationInterests() {
-        return (
-            () => {
-                let _res = [];
-                for (const key in card_game_pb.Cmd) {
-                    let _cmd = +key;
-                    if (!isNaN(_cmd)) _res.push(key);
-                }
-                return _res;
-            }
-        )();
-    };
-    handleNotification(notification) {
-        let _msgName: string = card_game_pb.Cmd[notification.name];
+        return this.getNotificationNames();
+    }
+    getNotificationNames(): string[] {
+        let _res = [];
+        for (const key in card_game_pb.Cmd) {
+            if (!isNaN(+key)) _res.push(key);
+        }
+        return _res;
+    }
+    handleNotification(notification: puremvc.INotification) {
+        let _msgName: string = card_game_pb.Cmd[notification.getName()];
         let _data: string = notification.getBody();
         if (this[_msgName]) this[_msgName](_data);
-
-    };
-
+    }
     private getGameModel(): GameModel {
         return (puremvc.Facade.getInstance("GameFacade") as puremvc.Facade).retrieveProxy("GameModel");
     }
-
-
+    private send(data) {
+        let _dataBuffer = this.mEncoder.encodeData(data);
+        if (_dataBuffer) Net.ins.send(_dataBuffer);
+    }
     //=== receive begin ===
-    private READY_C2S(data) {
-
-    }
-    private DEALCARDS_S2C(data) {
-        let _cards = data.cards;
-
-        let _gameModel = this.getGameModel();
-        _gameModel.cardsArr = _gameModel.sortByValue(_cards);
-        // let _myHandCardsShowArr = convert2ReadableNames(this.mCardsArr);
-        // console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
-    }
-    private COMPETEFORLANDLORDROLE_C2S(data) {
-        let _score = data;
-        console.log(`You has called ${data} score`);
-
-        let _gameModel = this.getGameModel();
-        this.send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: _score, seatNumber: _gameModel.seatNumber } });
-    }
     private COMPETEFORLANDLORDROLE_S2C(data) {
         let _curMaxScore = data.curMaxScore;
         let _seatNumber = data.seatNumber;
@@ -62,6 +43,14 @@ export class NetMediator extends puremvc.Mediator {
             // this.competeForLandLordRole_C2S(_score);
         }
     }
+    private DEALCARDS_S2C(data) {
+        let _cards = data.cards;
+
+        let _gameModel = this.getGameModel();
+        _gameModel.cardsArr = _gameModel.sortByValue(_cards);
+        // let _myHandCardsShowArr = convert2ReadableNames(this.mCardsArr);
+        // console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
+    }
     private PLAYTURN_S2C(data) {
         let _seatNumber = data.seatNumber;
 
@@ -71,20 +60,6 @@ export class NetMediator extends puremvc.Mediator {
             if (data.handCards) _gameModel.cardsArr = _gameModel.sortByValue(data.handCards);
             this.PLAYCARDS_C2S();
         }
-    }
-    private PLAYCARDS_C2S() {
-        console.log('Now, your turn.');
-        // console.log('Your cards->', convert2ReadableNames(this.mCardsArr).join(','));
-        console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm your input, input nothing to pass this turn):');
-        let _gameModel = this.getGameModel();
-        /* let _inputContent = this.getInputFromCmd();
-        if (_inputContent == "" || _gameModel.checkIsCardsLegal(_inputContent)) {
-            let _cardsNumberArr = _inputContent == "" ? [] : convert2CardNumbers(_inputContent.split(","));
-            this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: _cardsNumberArr, seatNumber: this.seatNumber } });
-        } else {
-            console.log("Illegal cards, please select your cards again.")
-            this.playTurn({ seatNumber: this.seatNumber });
-        } */
     }
     private PLAYCARDS_S2C(data) {
         let _cardsPlayed = data.cards;
@@ -124,42 +99,33 @@ export class NetMediator extends puremvc.Mediator {
         console.log(_msg);
     }
     //=== receive end ===
-
-
     //=== send begin ===
-    private encodeData(data) {
-        let _cmd = data.cmd;
-        let _dataBody = data.body;
-        let _bytesData;
-
-        let _gameModel = this.getGameModel();
-        switch (_cmd) {
-            case card_game_pb.Cmd.READY_C2S:
-                _bytesData = card_game_pb.ReadyC2S.encode({ seatNumber: _gameModel.seatNumber }).finish();
-                break;
-            case card_game_pb.Cmd.PLAYCARDS_C2S:
-                _bytesData = card_game_pb.PlayCardsC2S.encode({ seatNumber: _dataBody.seatNumber, cards: _dataBody.cards }).finish();
-                break;
-            case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S:
-                _bytesData = card_game_pb.CompeteForLandLordRoleC2S.encode({ seatNumber: _dataBody.seatNumber, score: _dataBody.score }).finish();
-                break;
-        }
-        if (_bytesData) {
-            let _completeData = card_game_pb.MainMessage.encode({
-                cmdId: _cmd,
-                data: _bytesData
-            }).finish();
-            return _completeData;
-        }
-        return null;
-    }
-    private send(data) {
-        let _dataBuffer = this.encodeData(data);
-        if (_dataBuffer) Net.ins.write(_dataBuffer);
-    }
-
     private startGame() {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
+    }
+    private PLAYCARDS_C2S() {
+        console.log('Now, your turn.');
+        // console.log('Your cards->', convert2ReadableNames(this.mCardsArr).join(','));
+        console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm your input, input nothing to pass this turn):');
+        let _gameModel = this.getGameModel();
+        /* let _inputContent = this.getInputFromCmd();
+        if (_inputContent == "" || _gameModel.checkIsCardsLegal(_inputContent)) {
+            let _cardsNumberArr = _inputContent == "" ? [] : convert2CardNumbers(_inputContent.split(","));
+            this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: _cardsNumberArr, seatNumber: this.seatNumber } });
+        } else {
+            console.log("Illegal cards, please select your cards again.")
+            this.playTurn({ seatNumber: this.seatNumber });
+        } */
+    }
+    private READY_C2S(data) {
+
+    }
+    private COMPETEFORLANDLORDROLE_C2S(data) {
+        let _score = data;
+        console.log(`You has called ${data} score`);
+
+        let _gameModel = this.getGameModel();
+        this.send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: _score, seatNumber: _gameModel.seatNumber } });
     }
     //=== send end ===
 }
