@@ -1,6 +1,6 @@
 import GameModel from '../model/GameModel';
 import { puremvc } from "../../lib/puremvc";
-import * as card_game_pb from "../../../share/proto/card-game";
+import * as card_game_pb from "../../proto/protobuf_bundle";
 import { Net } from './Net';
 import Encoder from './Encoder';
 

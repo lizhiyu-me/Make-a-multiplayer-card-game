@@ -1,5 +1,5 @@
 import { E_COMMON_MEDIATOR_EVENT } from './../CommonMediator';
-import * as card_game_pb from "../../../share/proto/card-game";
+import * as card_game_pb from "../../proto/protobuf_bundle";
 import { puremvc } from "../../lib/puremvc";
 import CommonMediator from "../CommonMediator";
 export default class Decoder {
@@ -10,28 +10,28 @@ export default class Decoder {
         let _bytesData = _mainMsg.data;
         switch (_cmd) {
             case card_game_pb.Cmd.DEALCARDS_S2C:
-                this.emitEvent(_cmd, card_game_pb.DealCardsS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.DealCards_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.PLAYCARDS_S2C:
-                this.emitEvent(_cmd, card_game_pb.PlayCardsS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.PlayCards_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.ILLEGALCARDS_S2C:
-                this.emitEvent(_cmd, card_game_pb.IllegalCardsS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.IllegalCards_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.GAMEEND_S2C:
-                this.emitEvent(_cmd, card_game_pb.GameEndS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.GameEnd_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.PLAYTURN_S2C:
-                this.emitEvent(_cmd, card_game_pb.PlayTurnS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.PlayTurn_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.GAMESTART_S2C:
-                this.emitEvent(_cmd, card_game_pb.GameStartS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.GameStart_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C:
-                this.emitEvent(_cmd, card_game_pb.CompeteForLandLordRoleS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.CompeteForLandLordRole_S2C.decode(_bytesData));
                 break;
             case card_game_pb.Cmd.BROADCAST_MSG_S2C:
-                this.emitEvent(_cmd, card_game_pb.BroadCastMsgS2C.decode(_bytesData));
+                this.emitEvent(_cmd, card_game_pb.BroadCastMsg_S2C.decode(_bytesData));
                 break;
             default:
                 console.log("no message matched.")
@@ -40,7 +40,7 @@ export default class Decoder {
     private emitEvent(cmd, data) {
         puremvc.Facade.getInstance("NetFacade").sendNotification(cmd, data);
     }
-    serverConnected(){
+    /* serverConnected(){
         puremvc.Facade.getInstance("GameFacade").sendNotification(CommonMediator.eventObj[E_COMMON_MEDIATOR_EVENT.SERVER_CONNECTED]);   
-    }
+    } */
 }

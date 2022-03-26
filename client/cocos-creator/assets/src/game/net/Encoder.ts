@@ -1,6 +1,6 @@
 import { puremvc } from "../../lib/puremvc";
 import GameModel from "../model/GameModel";
-import * as card_game_pb from "../../../share/proto/card-game";
+import * as card_game_pb from "../../proto/protobuf_bundle";
 
 export default class Encoder {
     constructor() { }
@@ -12,13 +12,13 @@ export default class Encoder {
         let _gameModel = this.getGameModel();
         switch (_cmd) {
             case card_game_pb.Cmd.READY_C2S:
-                _bytesData = card_game_pb.ReadyC2S.encode({ seatNumber: _gameModel.seatNumber }).finish();
+                _bytesData = card_game_pb.Ready_C2S.encode({ seatNumber: _gameModel.seatNumber }).finish();
                 break;
             case card_game_pb.Cmd.PLAYCARDS_C2S:
-                _bytesData = card_game_pb.PlayCardsC2S.encode({ seatNumber: _dataBody.seatNumber, cards: _dataBody.cards }).finish();
+                _bytesData = card_game_pb.PlayCards_C2S.encode({ seatNumber: _dataBody.seatNumber, cards: _dataBody.cards }).finish();
                 break;
             case card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S:
-                _bytesData = card_game_pb.CompeteForLandLordRoleC2S.encode({ seatNumber: _dataBody.seatNumber, score: _dataBody.score }).finish();
+                _bytesData = card_game_pb.CompeteForLandLordRole_C2S.encode({ seatNumber: _dataBody.seatNumber, score: _dataBody.score }).finish();
                 break;
         }
         if (_bytesData) {
