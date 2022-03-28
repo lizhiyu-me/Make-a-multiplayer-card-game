@@ -123,7 +123,7 @@ export default class Server {
         if (!this.mIsGaming) return;
         const _dataBuffer = this.encodeData(cmd, data);
         let _socket = this.socketDic[playerID];
-        if (_dataBuffer && _socket.readyState == WebSocket.OPEN) _socket.send(_dataBuffer,{binary:true});
+        if (_dataBuffer && _socket.readyState == WebSocket.OPEN) _socket.send(_dataBuffer);
     }
     private broadcast(cmd, data) {
         if (!this.mIsGaming) return;

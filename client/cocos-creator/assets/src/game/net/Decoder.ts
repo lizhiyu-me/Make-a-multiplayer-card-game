@@ -4,7 +4,8 @@ export default class Decoder {
     constructor() {}
     decodeData(msgEvent) {
         let _buffer = msgEvent.data;
-        let _mainMsg: card_game_pb.MainMessage = card_game_pb.MainMessage.decode(_buffer);
+        let _uint8View = new Uint8Array(_buffer);
+        let _mainMsg: card_game_pb.MainMessage = card_game_pb.MainMessage.decode(_uint8View);
         let _cmd = _mainMsg.cmdId;
         let _bytesData = _mainMsg.data;
         switch (_cmd) {

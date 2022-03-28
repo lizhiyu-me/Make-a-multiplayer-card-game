@@ -22,14 +22,10 @@ export default class Encoder {
                 break;
         }
         if (_bytesData) {
-            // let _completeData = card_game_pb.MainMessage.encode({
-            //     cmdId: _cmd,
-            //     data: _bytesData
-            // }).finish();
-            let _mainMsgData = card_game_pb.MainMessage.create();
-            _mainMsgData.cmdId = _cmd;
-            _mainMsgData.data = _bytesData;
-            let _completeData = card_game_pb.MainMessage.encode(_mainMsgData).finish();
+            let _completeData = card_game_pb.MainMessage.encode({
+                cmdId: _cmd,
+                data: _bytesData
+            }).finish();
             return _completeData;
         }
         return null;

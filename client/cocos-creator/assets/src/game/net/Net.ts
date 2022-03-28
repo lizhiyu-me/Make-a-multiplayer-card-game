@@ -9,6 +9,7 @@ export class Net {
     }
     private static createSocket(ip: string, port: number, cb: Function) {
         this.mSocket = new WebSocket("ws://" + ip + ":" + port);
+        this.mSocket.binaryType = "arraybuffer";
 
         this.mSocket.addEventListener('open', () => {
             cb && cb();
