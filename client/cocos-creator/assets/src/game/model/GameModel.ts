@@ -1,6 +1,6 @@
 import { puremvc } from "../../lib/puremvc";
 
-export default class GameModel extends puremvc.Model {
+export default class GameModel extends puremvc.Proxy {
     constructor() {
         super("GameModel");
     }

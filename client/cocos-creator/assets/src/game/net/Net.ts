@@ -12,7 +12,6 @@ export class Net {
 
         this.mSocket.addEventListener('open', () => {
             cb && cb();
-            // this.mDecoder.serverConnected();
         })
         this.mSocket.addEventListener('message', (buffer) => {
             this.mDecoder.decodeData(buffer);

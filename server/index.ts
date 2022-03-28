@@ -1,6 +1,7 @@
 import * as WebSocket from 'ws';
 import * as  readlineSync from 'readline-sync';
 import * as card_game_pb from "../share/proto/card-game";
+// import * as card_game_pb from "../share/proto/cocos-creator/protobuf_bundle";
 import { Ruler, E_TYPE } from "chinese-poker"
 export default class Server {
     private socketDic: { [playerID: number]: WebSocket } = {};
@@ -14,6 +15,7 @@ export default class Server {
         this.selectPlayerCount();
 
         this.mServer.on("connection", (socket: WebSocket) => {
+            console.log("new connection");
             let _id_seat = this.generatePlayerIDAndSeatNumber();
             let _playerID = _id_seat.id;
             let _seatNumber = _id_seat.seat;
@@ -37,9 +39,9 @@ export default class Server {
     }
 
     private addSocketListener(socket: WebSocket) {
-        socket.addEventListener('message', (data) => {
+        socket.addEventListener('message', (msgEvent) => {
             let _playerID = socket["id"];
-            this.decodeData(data, _playerID);
+            this.decodeData(msgEvent.data, _playerID);
         });
         socket.addEventListener('close', (socket) => {
             console.log("close");
@@ -121,7 +123,7 @@ export default class Server {
         if (!this.mIsGaming) return;
         const _dataBuffer = this.encodeData(cmd, data);
         let _socket = this.socketDic[playerID];
-        if (_dataBuffer && _socket.readyState == WebSocket.OPEN) _socket.send(_dataBuffer);
+        if (_dataBuffer && _socket.readyState == WebSocket.OPEN) _socket.send(_dataBuffer,{binary:true});
     }
     private broadcast(cmd, data) {
         if (!this.mIsGaming) return;
@@ -130,7 +132,7 @@ export default class Server {
             let _keyArr = Object.keys(this.socketDic);
             for (let i = 0; i < _keyArr.length; i++) {
                 let _socket = this.socketDic[_keyArr[i]];
-                if (_socket && !_socket.destroyed) _socket.write(_dataBuffer);
+                if (_socket && !_socket.destroyed) _socket.send(_dataBuffer);
             }
         }
     }

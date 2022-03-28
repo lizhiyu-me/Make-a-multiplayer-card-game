@@ -3,6 +3,8 @@ import { puremvc } from "../../lib/puremvc";
 import * as card_game_pb from "../../proto/protobuf_bundle";
 import { Net } from './Net';
 import Encoder from './Encoder';
+import GameSceneMediator, { EGAME_SCENE_EVENT } from '../view/GameSceneMediator';
+import GameFacade from '../GameFacade';
 
 export class NetMediator extends puremvc.Mediator {
     constructor(private mEncoder = new Encoder()) {
@@ -26,6 +28,9 @@ export class NetMediator extends puremvc.Mediator {
     private getGameModel(): GameModel {
         return (puremvc.Facade.getInstance("GameFacade") as puremvc.Facade).retrieveProxy("GameModel");
     }
+    private getGameFacade(): GameFacade {
+        return puremvc.Facade.getInstance("GameFacade") as GameFacade;
+    }
     private send(data) {
         let _dataBuffer = this.mEncoder.encodeData(data);
         if (_dataBuffer) Net.ins.send(_dataBuffer);
@@ -37,6 +42,8 @@ export class NetMediator extends puremvc.Mediator {
 
         let _gameModel = this.getGameModel();
         if (_seatNumber == _gameModel.seatNumber) {
+            let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.COMPETE_FOR_LANDLORD];
+            this.getGameFacade().sendNotification(_notifNameSymbol, { curMaxScore: _curMaxScore });
             // let _scoreCanBeSelectedStr = "123".slice(_curMaxScore).split("").join("|");
             // console.log(`Select a score to confirm role (you can input ${_scoreCanBeSelectedStr}, the one who select the biggest number will be the land lord, and the base score is the selected number.): `);
             // const _score = this.getInputFromCmd();
@@ -118,7 +125,7 @@ export class NetMediator extends puremvc.Mediator {
         } */
     }
     private READY_C2S(data) {
-
+        this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
     private COMPETEFORLANDLORDROLE_C2S(data) {
         let _score = data;

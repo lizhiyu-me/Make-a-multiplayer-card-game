@@ -1,32 +1,22 @@
-import { puremvc } from "../lib/puremvc";
+import BaseMediator from "./base/BaseMediator";
 
-export enum E_COMMON_MEDIATOR_EVENT {
+export enum ECOMMON_MEDIATOR_EVENT {
     SERVER_CONNECTED,
 
 }
-export default class CommonMediator extends puremvc.Mediator {
-    static eventObj: { [key in E_COMMON_MEDIATOR_EVENT]?: symbol } = {}
+export default class CommonMediator extends BaseMediator {
+    static eventObj: { [key in ECOMMON_MEDIATOR_EVENT]?: symbol } = {};
     constructor() {
         super("CommonMediator");
     }
-    listNotificationInterests(): any[] {
-        return this.getNotificationSymbols();
-    }
-    getNotificationSymbols(): Symbol[] {
-        let _res = [];
-        for (const key in E_COMMON_MEDIATOR_EVENT) {
-            if (!isNaN(+key)) {
-                let _sym = Symbol();
-                CommonMediator.eventObj[+key] = _sym;
-                _res.push(_sym);
-            }
-        }
-        return _res;
+    listNotificationInterests(): Symbol[] {
+        return this.getNotificationSymbols(ECOMMON_MEDIATOR_EVENT,CommonMediator);
     }
     handleNotification(notification: any): void {
-        switch (notification.getName()) {
-            case CommonMediator.eventObj[E_COMMON_MEDIATOR_EVENT.SERVER_CONNECTED]:
-                
+        let _nameSymbol = notification.getName();
+        switch (_nameSymbol) {
+            case CommonMediator.eventObj[ECOMMON_MEDIATOR_EVENT.SERVER_CONNECTED]:
+                console.log("123")
                 break;
         }
     }

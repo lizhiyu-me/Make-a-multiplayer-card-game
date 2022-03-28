@@ -1,14 +1,8 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
-
+import { puremvc } from './../../../lib/puremvc';
 import GameFacade from "../../GameFacade";
 import GameSceneMediator from "../GameSceneMediator";
 
-const {ccclass, property} = cc._decorator;
+const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class CCC_Game_Scene extends cc.Component {
@@ -16,21 +10,22 @@ export default class CCC_Game_Scene extends cc.Component {
     @property(cc.Label)
     status: cc.Label = null;
 
-    @property(Node)
-    handList: Node = null;
-    @property(Node)
-    controlPanel: Node = null;
+    @property(cc.Node)
+    handList: cc.Node = null;
+    @property(cc.Node)
+    controlPanel: cc.Node = null;
 
-    // LIFE-CYCLE CALLBACKS:
 
-    onLoad () {
-        let _gameFacade = new GameFacade();
-        _gameFacade.registerMediator(new GameSceneMediator(this.node));
+    onLoad() {
+        new GameFacade();
     }
 
-    start () {
-
+    getGameFacade(): GameFacade {
+        return puremvc.Facade.getInstance("GameFacade") as GameFacade;
     }
 
-    // update (dt) {}
+    start() {
+        this.getGameFacade().registerMediator(new GameSceneMediator(this.node));
+    }
+
 }

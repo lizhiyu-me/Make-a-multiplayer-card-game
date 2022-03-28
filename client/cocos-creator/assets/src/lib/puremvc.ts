@@ -29,7 +29,7 @@ export namespace puremvc {
       getMediatorName(): string;
       getViewComponent(): any;
       setViewComponent(viewComponent: any): void;
-      listNotificationInterests(): string[];
+      listNotificationInterests(E?): symbol[] | string[];
       handleNotification(notification: INotification): void;
       onRegister(): void;
       onRemove(): void;
@@ -535,7 +535,7 @@ export namespace puremvc {
       setViewComponent(viewComponent) {
           this.viewComponent = viewComponent;
       };
-      listNotificationInterests() {
+      listNotificationInterests(E) {
           return [];
       };
       handleNotification(notification) {
