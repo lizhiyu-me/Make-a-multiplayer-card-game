@@ -6,16 +6,6 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class CCC_Game_Scene extends cc.Component {
-
-    @property(cc.Label)
-    status: cc.Label = null;
-
-    @property(cc.Node)
-    handList: cc.Node = null;
-    @property(cc.Node)
-    controlPanel: cc.Node = null;
-
-
     onLoad() {
         new GameFacade();
     }

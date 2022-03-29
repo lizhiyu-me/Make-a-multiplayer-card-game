@@ -1,7 +1,6 @@
 import * as WebSocket from 'ws';
 import * as  readlineSync from 'readline-sync';
 import * as card_game_pb from "../share/proto/card-game";
-// import * as card_game_pb from "../share/proto/cocos-creator/protobuf_bundle";
 import { Ruler, E_TYPE } from "chinese-poker"
 export default class Server {
     private socketDic: { [playerID: number]: WebSocket } = {};

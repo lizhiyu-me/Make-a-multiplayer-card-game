@@ -41,42 +41,44 @@ export class NetMediator extends puremvc.Mediator {
         let _seatNumber = data.seatNumber;
 
         let _gameModel = this.getGameModel();
-        if (_seatNumber == _gameModel.seatNumber) {
-            let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.COMPETE_FOR_LANDLORD];
+        if (_seatNumber == _gameModel.mainServerSeatNumber) {
+            let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.COMPETE_FOR_LANDLORD_S2C];
             this.getGameFacade().sendNotification(_notifNameSymbol, { curMaxScore: _curMaxScore });
-            // let _scoreCanBeSelectedStr = "123".slice(_curMaxScore).split("").join("|");
-            // console.log(`Select a score to confirm role (you can input ${_scoreCanBeSelectedStr}, the one who select the biggest number will be the land lord, and the base score is the selected number.): `);
-            // const _score = this.getInputFromCmd();
-            // this.competeForLandLordRole_C2S(_score);
         }
     }
     private DEALCARDS_S2C(data) {
         let _cards = data.cards;
 
         let _gameModel = this.getGameModel();
-        _gameModel.cardsArr = _gameModel.sortByValue(_cards);
-        // let _myHandCardsShowArr = convert2ReadableNames(this.mCardsArr);
-        // console.log('Deal cards complete, your seat number is-> ', data.seatNumber, 'your cards->', _myHandCardsShowArr.join(','));
+        let _cardsSorted = _gameModel.sortByValue(_cards);
+        _gameModel.cardsArr = _cardsSorted;
+
+        let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.DEAL_CARDS_S2C];
+        this.getGameFacade().sendNotification(_notifNameSymbol, _cardsSorted);
     }
     private PLAYTURN_S2C(data) {
         let _seatNumber = data.seatNumber;
 
         let _gameModel = this.getGameModel();
-        if (_seatNumber == _gameModel.seatNumber) {
-            //update hand cards
-            if (data.handCards) _gameModel.cardsArr = _gameModel.sortByValue(data.handCards);
-            this.PLAYCARDS_C2S();
-        }
+        // if (_seatNumber == _gameModel.mainServerSeatNumber) {
+        //update hand cards
+        if (data.handCards) _gameModel.cardsArr = _gameModel.sortByValue(data.handCards);
+        let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYTURN_S2C];
+        this.getGameFacade().sendNotification(_notifNameSymbol, _seatNumber);
+        // }
     }
     private PLAYCARDS_S2C(data) {
         let _cardsPlayed = data.cards;
         let _seatNumber = data.seatNumber;
 
-        let _gameModel = this.getGameModel();
         if (_cardsPlayed.length == 0) {
             console.log(`Player ${_seatNumber}-> passed.`)
         } else {
-            console.log(`Player ${_seatNumber}-> played ${_gameModel.convert2ReadableNames(_cardsPlayed).join(",")}.`);
+            if (_seatNumber == this.getGameModel().mainServerSeatNumber) {
+                this.getGameModel().removePlayerCards(_cardsPlayed);
+                this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.REFRESH_HAND_CARDS_VIEW]);
+            }
+            this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYCARDS_S2C], { cards: _cardsPlayed, seatNumber: _seatNumber });
         }
     }
     private ILLEGALCARDS_S2C(data) {
@@ -86,7 +88,7 @@ export class NetMediator extends puremvc.Mediator {
         let _winnerSeatNumber = data.seatNumber;
 
         let _gameModel = this.getGameModel();
-        let _isWin = _winnerSeatNumber === _gameModel.seatNumber;
+        let _isWin = _winnerSeatNumber === _gameModel.mainServerSeatNumber;
         let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
         console.log(_content);
         _gameModel.resetWhenGameEnd();
@@ -99,7 +101,7 @@ export class NetMediator extends puremvc.Mediator {
         console.log("Game start.");
 
         let _gameModel = this.getGameModel();
-        _gameModel.seatNumber = data.seatNumber;
+        _gameModel.mainServerSeatNumber = data.seatNumber;
     }
     private BROADCAST_MSG_S2C(data) {
         let _msg = data.msg;
@@ -110,29 +112,20 @@ export class NetMediator extends puremvc.Mediator {
     private startGame() {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
-    private PLAYCARDS_C2S() {
-        console.log('Now, your turn.');
-        // console.log('Your cards->', convert2ReadableNames(this.mCardsArr).join(','));
-        console.log('Please input your cards to play (join with ",", e.g."A,A,A,6", press "Enter" to confirm your input, input nothing to pass this turn):');
+    private PLAYCARDS_C2S(cardsSerial: number[]) {
         let _gameModel = this.getGameModel();
-        /* let _inputContent = this.getInputFromCmd();
-        if (_inputContent == "" || _gameModel.checkIsCardsLegal(_inputContent)) {
-            let _cardsNumberArr = _inputContent == "" ? [] : convert2CardNumbers(_inputContent.split(","));
-            this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: _cardsNumberArr, seatNumber: this.seatNumber } });
-        } else {
-            console.log("Illegal cards, please select your cards again.")
-            this.playTurn({ seatNumber: this.seatNumber });
-        } */
+        // if (cardsSerial.length != 0 || _gameModel.checkIsCardsLegal(cardsSerial)) {
+        this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: cardsSerial, seatNumber: _gameModel.mainServerSeatNumber } });
+        // }
     }
     private READY_C2S(data) {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
     private COMPETEFORLANDLORDROLE_C2S(data) {
         let _score = data;
-        console.log(`You has called ${data} score`);
 
         let _gameModel = this.getGameModel();
-        this.send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: _score, seatNumber: _gameModel.seatNumber } });
+        this.send({ cmd: card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, body: { score: _score, seatNumber: _gameModel.mainServerSeatNumber } });
     }
     //=== send end ===
 }

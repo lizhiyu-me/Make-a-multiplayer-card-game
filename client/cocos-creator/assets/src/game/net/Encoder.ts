@@ -12,7 +12,7 @@ export default class Encoder {
         let _gameModel = this.getGameModel();
         switch (_cmd) {
             case card_game_pb.Cmd.READY_C2S:
-                _bytesData = card_game_pb.Ready_C2S.encode({ seatNumber: _gameModel.seatNumber }).finish();
+                _bytesData = card_game_pb.Ready_C2S.encode({ seatNumber: _gameModel.mainServerSeatNumber }).finish();
                 break;
             case card_game_pb.Cmd.PLAYCARDS_C2S:
                 _bytesData = card_game_pb.PlayCards_C2S.encode({ seatNumber: _dataBody.seatNumber, cards: _dataBody.cards }).finish();
@@ -32,6 +32,6 @@ export default class Encoder {
     }
 
     private getGameModel(): GameModel {
-        return (puremvc.Facade.getInstance("GameFacade") as puremvc.Facade).retrieveProxy("GameModel");
+        return puremvc.Facade.getInstance("GameFacade").retrieveProxy("GameModel");
     }
 }

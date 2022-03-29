@@ -52,6 +52,23 @@ export default class GameModel extends puremvc.Proxy {
         0x04: '4',
         0x03: '3'
     }
+    private _mainSeverSeatNumber: number = -1;
+    public get mainServerSeatNumber(): number {
+        return this._mainSeverSeatNumber;
+    }
+    public set mainServerSeatNumber(v: number) {
+        this._mainSeverSeatNumber = v;
+    }
+    playerCount: number = 2;
+    getClientSeatNumber(serverSeatNumber: number): number {
+        if (this.mainServerSeatNumber === -1) {
+            console.log("mainWorldChairId is not set");
+            return;
+        }
+        let _distance: number = serverSeatNumber - this.mainServerSeatNumber;
+        let _localChairId: number = _distance >= 0 ? _distance : _distance + this.playerCount;
+        return _localChairId;
+    }
     getCardReadableName(cardNumber): string {
         let _cardNumber = Number(cardNumber);
         let _value = _cardNumber % 0x10;
@@ -75,8 +92,6 @@ export default class GameModel extends puremvc.Proxy {
     }
 
     cardsArr: number[] = [];
-    seatNumber: number;
-
     getCardValue(cardSerialNumber) {
         let _cardNumber;
         let _cardNumberWithoutSuit = cardSerialNumber % 0x10;
@@ -94,6 +109,16 @@ export default class GameModel extends puremvc.Proxy {
         return _cardNumber;
     }
 
+    removePlayerCards(playedCards) {
+        let _handCardsArr = this.cardsArr;
+        for (let i = 0; i < playedCards.length; i++) {
+            let item = playedCards[i];
+            let _idx = _handCardsArr.indexOf(item);
+            _handCardsArr.splice(_idx, 1);
+        }
+        return _handCardsArr;
+    }
+
     sortByValue(arr) {
         return arr.sort((a, b) => {
             return this.getCardValue(b) - this.getCardValue(a);
@@ -101,15 +126,15 @@ export default class GameModel extends puremvc.Proxy {
     }
 
     resetWhenGameEnd() {
-        this.seatNumber = null;
+        this.mainServerSeatNumber = null;
     }
 
-    checkIsCardsLegal(cardsNumberStr) {
+    /* checkIsCardsLegal(cardsNumberStr) {
         let _cardsNumberStrArr = cardsNumberStr.split(",");
         for (let i = 0; i < _cardsNumberStrArr.length; i++) {
             const _cardNumberStr = _cardsNumberStrArr[i];
             if (!this.cardNameNumberDic[_cardNumberStr]) return false;
         }
         return true;
-    }
+    } */
 }
