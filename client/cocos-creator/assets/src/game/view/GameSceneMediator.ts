@@ -32,7 +32,7 @@ export default class GameSceneMediator extends BaseMediator {
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYTURN_S2C]:
                 this.setStatusLabel("");
-                this.clearOutList();
+                this.clearOutList(_data);
                 this.showControlPanelOperation(_data);
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYCARDS_S2C]:
