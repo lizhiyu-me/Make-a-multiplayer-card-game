@@ -58,12 +58,12 @@ message GameEnd_S2C{
 
 message PlayTurn_S2C{
     uint32 seat_number = 1;
-    repeated uint32 hand_cards = 2;
 }
 
 message GameStart_S2C{
     uint32 seat_number = 1;
     uint32 player_id = 2;
+    uint32 player_count = 3;
 }
 
 message BroadCastMsg_S2C{

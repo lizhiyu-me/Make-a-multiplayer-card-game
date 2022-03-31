@@ -333,7 +333,7 @@ export default class Server {
             let _socket = this.socketDic[_keyArr[i]];
             let _playerID = _socket.id;
             let _seatNumber = _socket.seat;
-            let _data = { playerId: _playerID, seatNumber: _seatNumber };
+            let _data = { playerId: _playerID, seatNumber: _seatNumber, playerCount: this.playerCount };
             this.send(_playerID, card_game_pb.Cmd.GAMESTART_S2C, _data);
         }
     }

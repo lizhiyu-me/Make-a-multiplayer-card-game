@@ -2140,6 +2140,7 @@ $root.GameStart_S2C = (function() {
      * @interface IGameStart_S2C
      * @property {number|null} [seatNumber] GameStart_S2C seatNumber
      * @property {number|null} [playerId] GameStart_S2C playerId
+     * @property {number|null} [playerCount] GameStart_S2C playerCount
      */
 
     /**
@@ -2174,6 +2175,14 @@ $root.GameStart_S2C = (function() {
     GameStart_S2C.prototype.playerId = 0;
 
     /**
+     * GameStart_S2C playerCount.
+     * @member {number} playerCount
+     * @memberof GameStart_S2C
+     * @instance
+     */
+    GameStart_S2C.prototype.playerCount = 0;
+
+    /**
      * Creates a new GameStart_S2C instance using the specified properties.
      * @function create
      * @memberof GameStart_S2C
@@ -2201,6 +2210,8 @@ $root.GameStart_S2C = (function() {
             writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.seatNumber);
         if (message.playerId != null && Object.hasOwnProperty.call(message, "playerId"))
             writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.playerId);
+        if (message.playerCount != null && Object.hasOwnProperty.call(message, "playerCount"))
+            writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.playerCount);
         return writer;
     };
 
@@ -2240,6 +2251,9 @@ $root.GameStart_S2C = (function() {
                 break;
             case 2:
                 message.playerId = reader.uint32();
+                break;
+            case 3:
+                message.playerCount = reader.uint32();
                 break;
             default:
                 reader.skipType(tag & 7);
@@ -2282,6 +2296,9 @@ $root.GameStart_S2C = (function() {
         if (message.playerId != null && message.hasOwnProperty("playerId"))
             if (!$util.isInteger(message.playerId))
                 return "playerId: integer expected";
+        if (message.playerCount != null && message.hasOwnProperty("playerCount"))
+            if (!$util.isInteger(message.playerCount))
+                return "playerCount: integer expected";
         return null;
     };
 
@@ -2301,6 +2318,8 @@ $root.GameStart_S2C = (function() {
             message.seatNumber = object.seatNumber >>> 0;
         if (object.playerId != null)
             message.playerId = object.playerId >>> 0;
+        if (object.playerCount != null)
+            message.playerCount = object.playerCount >>> 0;
         return message;
     };
 
@@ -2320,11 +2339,14 @@ $root.GameStart_S2C = (function() {
         if (options.defaults) {
             object.seatNumber = 0;
             object.playerId = 0;
+            object.playerCount = 0;
         }
         if (message.seatNumber != null && message.hasOwnProperty("seatNumber"))
             object.seatNumber = message.seatNumber;
         if (message.playerId != null && message.hasOwnProperty("playerId"))
             object.playerId = message.playerId;
+        if (message.playerCount != null && message.hasOwnProperty("playerCount"))
+            object.playerCount = message.playerCount;
         return object;
     };
 

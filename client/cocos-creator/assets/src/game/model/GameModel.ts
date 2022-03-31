@@ -60,7 +60,7 @@ export default class GameModel extends puremvc.Proxy {
         this._mainSeverSeatNumber = v;
     }
     playerID: number = -1;
-    playerCount: number = 2;
+    playerCount: number = 3;
     getClientSeatNumber(serverSeatNumber: number): number {
         if (this.mainServerSeatNumber === -1) {
             console.log("mainWorldChairId is not set");

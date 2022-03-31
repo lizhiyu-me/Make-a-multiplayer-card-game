@@ -97,6 +97,7 @@ export class NetMediator extends puremvc.Mediator {
         let _gameModel = this.getGameModel();
         _gameModel.mainServerSeatNumber = data.seatNumber;
         _gameModel.playerID = data.playerId;
+        _gameModel.playerCount = data.playerCount;
 
         this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.SHOW_PLAYER_INFO_VIEW], { playerID: data.playerId, seatNumber: data.seatNumber });
     }

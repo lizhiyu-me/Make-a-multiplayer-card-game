@@ -878,6 +878,9 @@ export class GameStart_S2C implements IGameStart_S2C {
     /** GameStart_S2C playerId. */
     public playerId: number;
 
+    /** GameStart_S2C playerCount. */
+    public playerCount: number;
+
     /**
      * Creates a new GameStart_S2C instance using the specified properties.
      * @param [properties] Properties to set

@@ -140,12 +140,12 @@ export interface GameEndS2C {
 
 export interface PlayTurnS2C {
   seatNumber: number;
-  handCards: number[];
 }
 
 export interface GameStartS2C {
   seatNumber: number;
   playerId: number;
+  playerCount: number;
 }
 
 export interface BroadCastMsgS2C {
@@ -756,7 +756,7 @@ export const GameEndS2C = {
 };
 
 function createBasePlayTurnS2C(): PlayTurnS2C {
-  return { seatNumber: 0, handCards: [] };
+  return { seatNumber: 0 };
 }
 
 export const PlayTurnS2C = {
@@ -767,11 +767,6 @@ export const PlayTurnS2C = {
     if (message.seatNumber !== 0) {
       writer.uint32(8).uint32(message.seatNumber);
     }
-    writer.uint32(18).fork();
-    for (const v of message.handCards) {
-      writer.uint32(v);
-    }
-    writer.ldelim();
     return writer;
   },
 
@@ -785,16 +780,6 @@ export const PlayTurnS2C = {
         case 1:
           message.seatNumber = reader.uint32();
           break;
-        case 2:
-          if ((tag & 7) === 2) {
-            const end2 = reader.uint32() + reader.pos;
-            while (reader.pos < end2) {
-              message.handCards.push(reader.uint32());
-            }
-          } else {
-            message.handCards.push(reader.uint32());
-          }
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -806,9 +791,6 @@ export const PlayTurnS2C = {
   fromJSON(object: any): PlayTurnS2C {
     return {
       seatNumber: isSet(object.seatNumber) ? Number(object.seatNumber) : 0,
-      handCards: Array.isArray(object?.handCards)
-        ? object.handCards.map((e: any) => Number(e))
-        : [],
     };
   },
 
@@ -816,11 +798,6 @@ export const PlayTurnS2C = {
     const obj: any = {};
     message.seatNumber !== undefined &&
       (obj.seatNumber = Math.round(message.seatNumber));
-    if (message.handCards) {
-      obj.handCards = message.handCards.map((e) => Math.round(e));
-    } else {
-      obj.handCards = [];
-    }
     return obj;
   },
 
@@ -829,13 +806,12 @@ export const PlayTurnS2C = {
   ): PlayTurnS2C {
     const message = createBasePlayTurnS2C();
     message.seatNumber = object.seatNumber ?? 0;
-    message.handCards = object.handCards?.map((e) => e) || [];
     return message;
   },
 };
 
 function createBaseGameStartS2C(): GameStartS2C {
-  return { seatNumber: 0, playerId: 0 };
+  return { seatNumber: 0, playerId: 0, playerCount: 0 };
 }
 
 export const GameStartS2C = {
@@ -848,6 +824,9 @@ export const GameStartS2C = {
     }
     if (message.playerId !== 0) {
       writer.uint32(16).uint32(message.playerId);
+    }
+    if (message.playerCount !== 0) {
+      writer.uint32(24).uint32(message.playerCount);
     }
     return writer;
   },
@@ -865,6 +844,9 @@ export const GameStartS2C = {
         case 2:
           message.playerId = reader.uint32();
           break;
+        case 3:
+          message.playerCount = reader.uint32();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -877,6 +859,7 @@ export const GameStartS2C = {
     return {
       seatNumber: isSet(object.seatNumber) ? Number(object.seatNumber) : 0,
       playerId: isSet(object.playerId) ? Number(object.playerId) : 0,
+      playerCount: isSet(object.playerCount) ? Number(object.playerCount) : 0,
     };
   },
 
@@ -886,6 +869,8 @@ export const GameStartS2C = {
       (obj.seatNumber = Math.round(message.seatNumber));
     message.playerId !== undefined &&
       (obj.playerId = Math.round(message.playerId));
+    message.playerCount !== undefined &&
+      (obj.playerCount = Math.round(message.playerCount));
     return obj;
   },
 
@@ -895,6 +880,7 @@ export const GameStartS2C = {
     const message = createBaseGameStartS2C();
     message.seatNumber = object.seatNumber ?? 0;
     message.playerId = object.playerId ?? 0;
+    message.playerCount = object.playerCount ?? 0;
     return message;
   },
 };
