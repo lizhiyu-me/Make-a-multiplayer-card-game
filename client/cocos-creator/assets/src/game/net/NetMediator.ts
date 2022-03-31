@@ -1,3 +1,4 @@
+import { GameStart_S2C } from './../../proto/protobuf_bundle.d';
 import GameModel from '../model/GameModel';
 import { puremvc } from "../../lib/puremvc";
 import * as card_game_pb from "../../proto/protobuf_bundle";
@@ -87,9 +88,7 @@ export class NetMediator extends puremvc.Mediator {
         console.log(_content);
         _gameModel.resetWhenGameEnd();
 
-        console.log("Press Enter to restart.")
-        // this.getInputFromCmd();
-        this.reqStartGame();
+        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_END_S2C]);
     }
     private GAMESTART_S2C(data) {
         console.log("Game start.");
@@ -99,6 +98,7 @@ export class NetMediator extends puremvc.Mediator {
         _gameModel.playerID = data.playerId;
         _gameModel.playerCount = data.playerCount;
 
+        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_START_S2C]);
         this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.SHOW_PLAYER_INFO_VIEW], { playerID: data.playerId, seatNumber: data.seatNumber });
     }
     private BROADCAST_MSG_S2C(data) {
@@ -113,11 +113,9 @@ export class NetMediator extends puremvc.Mediator {
     private PLAYCARDS_C2S(cardsSerial: number[]) {
         let _gameModel = this.getGameModel();
         let _seatNumber = _gameModel.mainServerSeatNumber;
-        // if (cardsSerial.length != 0 || _gameModel.checkIsCardsLegal(cardsSerial)) {
         this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: cardsSerial, seatNumber: _seatNumber } });
-        // }
     }
-    private READY_C2S(data) {
+    private READY_C2S() {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
     private COMPETEFORLANDLORDROLE_C2S(data) {

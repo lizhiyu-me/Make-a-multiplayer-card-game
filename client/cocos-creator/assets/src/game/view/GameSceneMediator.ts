@@ -1,3 +1,4 @@
+import { Ready_C2S } from './../../proto/protobuf_bundle.d';
 import { puremvc } from "../../lib/puremvc";
 import BaseMediator from "../base/BaseMediator";
 import * as card_game_pb from "../../proto/protobuf_bundle";
@@ -10,6 +11,8 @@ export enum EGAME_SCENE_EVENT {
     PLAYCARDS_S2C,
     REFRESH_HAND_CARDS_VIEW,
     SHOW_PLAYER_INFO_VIEW,
+    GAME_START_S2C,
+    GAME_END_S2C,
 }
 export default class GameSceneMediator extends BaseMediator {
     static eventObj: { [key in EGAME_SCENE_EVENT]?: symbol } = {};
@@ -24,15 +27,15 @@ export default class GameSceneMediator extends BaseMediator {
         let _data = notification.getBody();
         switch (_nameSymbol) {
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.COMPETE_FOR_LANDLORD_S2C]:
-                this.setStatusLabel("");
+                this.setStatusLabel("Lord Role Confirming");
                 this.showControlPanelScores(_data.curMaxScore);
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.DEAL_CARDS_S2C]:
-                this.setStatusLabel("");
+                this.setStatusLabel("Dealing");
                 this.dealCards(_data);
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYTURN_S2C]:
-                this.setStatusLabel("");
+                this.setStatusLabel("Player " + _data + " 's turn");
                 this.clearOutList(_data);
                 this.showControlPanelOperation(_data);
                 break;
@@ -46,7 +49,17 @@ export default class GameSceneMediator extends BaseMediator {
                 this.dealCards(_curHandCards);
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.SHOW_PLAYER_INFO_VIEW]:
-                this.showMainPlayerInfo(_data.playerID,_data.seatNumber)
+                this.showMainPlayerInfo(_data.playerID, _data.seatNumber)
+                break;
+            case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_END_S2C]:
+                let _btnStart = cc.find("Canvas/btnStart");
+                _btnStart.active = true;
+                break;
+            case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_START_S2C]:
+                {
+                    let _btnStart = cc.find("Canvas/btnStart");
+                    _btnStart.active = false;
+                }
                 break;
         }
     }
@@ -97,6 +110,9 @@ export default class GameSceneMediator extends BaseMediator {
         let _btnPass = cc.find("Canvas/controlPanel/operation/pass");
         _btnOut.on(cc.Node.EventType.TOUCH_START, this.onOutCards_C2S.bind(this))
         _btnPass.on(cc.Node.EventType.TOUCH_START, this.onPass_C2S.bind(this))
+
+        let _btnStart = cc.find("Canvas/btnStart");
+        _btnStart.on(cc.Node.EventType.TOUCH_START, this.onReady_C2S.bind(this));
     }
     private onOutCards_C2S() {
         this.hideControlPanel();
@@ -131,6 +147,9 @@ export default class GameSceneMediator extends BaseMediator {
     private onPass_C2S() {
         this.hideControlPanel();
         this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, []);
+    }
+    private onReady_C2S() {
+        this.getNetFacade().sendNotification(card_game_pb.Cmd.READY_C2S);
     }
 
     private showControlPanelScores(curMaxScore: number) {
