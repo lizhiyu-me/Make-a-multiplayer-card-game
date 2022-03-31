@@ -8,21 +8,19 @@ export default class Server {
     private playerCount = 3;
     private mServer: WebSocket.Server;
     constructor(private mRuler = new Ruler()) {
-        this.mServer = new WebSocket.Server({ port: this.port },()=>{
+        this.mServer = new WebSocket.Server({ port: this.port }, () => {
             console.log(`server started at port ${this.port}`);
         });
         this.selectPlayerCount();
 
         this.mServer.on("connection", (socket: WebSocket) => {
             console.log("new connection");
-            let _id_seat = this.generatePlayerIDAndSeatNumber();
-            let _playerID = _id_seat.id;
-            let _seatNumber = _id_seat.seat;
-            socket["id"] = _playerID;
-            socket["seat"] = _seatNumber;
-            this.socketDic[_playerID] = socket;
-
             this.addSocketListener(socket);
+            let _id_seat = this.generatePlayerIDAndSeatNumber();
+            socket["id"] = _id_seat.id;
+            socket["seat"] = _id_seat.seat;
+            this.socketDic[_id_seat.id] = socket;
+
         });
     }
     private selectPlayerCount() {
@@ -137,7 +135,7 @@ export default class Server {
     }
 
     //====== game logic bellow ======
-    private playerCardsDic = {};
+    private playerCardsDic: { [seatNumber: number]: number[] } = {};
     private initialCardCount = 17;
     private lordCardsCount = 3;
     private dealCards_S2C() {
@@ -149,21 +147,13 @@ export default class Server {
         let _lordCards = _pokerPool.slice(-this.lordCardsCount);
         this.playerCardsDic[this.lordRoleSeat] = this.playerCardsDic[this.lordRoleSeat].concat(_lordCards);
 
-        let _keyArr = Object.keys(this.playerCardsDic);
-        for (let i = 0; i < _keyArr.length; i++) {
-            const _originCards = this.playerCardsDic[_keyArr[i]];
-            this.playerCardsDic[_keyArr[i]] = _originCards.map(card => card % 0x10);
-        }
-
-        let _countIdx = 0;
-        _keyArr = Object.keys(this.socketDic);
-        for (let i = 0; i < _keyArr.length; i++) {
-            let _socket = this.socketDic[_keyArr[i]];
+        for (let i in this.playerCardsDic) {
+            let _seatNumber = parseInt(i);
+            let _socket = this.getSocketBySeatNumber(_seatNumber, this.socketDic);
             let _playerID = _socket.id;
-            let _seatNumber = _socket.seat;
             let data = {
                 seatNumber: _seatNumber,
-                cards: this.playerCardsDic[_countIdx++]
+                cards: this.playerCardsDic[i]
             }
             this.send(_playerID, card_game_pb.Cmd.DEALCARDS_S2C, data);
         }
@@ -201,7 +191,8 @@ export default class Server {
             this.broadMsg("Land lord player's seat number is " + this.lordRoleSeat);
             this.dealCards_S2C();
             //turn to lord role player
-            this.send(this.lordRolePlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: this.lordRoleSeat, handCards: this.playerCardsDic[this.lordRoleSeat] });
+            // this.send(this.lordRolePlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: this.lordRoleSeat, handCards: this.playerCardsDic[this.lordRoleSeat] });
+            this.send(this.lordRolePlayerID, card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: this.lordRoleSeat });
         } else {
             let _nextTurnSeat = this.getNextPlayerSeatNumber(_seatNumber);
             // let _nextPlayerID = this.getPlayerIDBySeatNumber(_nextTurnSeat);
@@ -255,7 +246,7 @@ export default class Server {
             setTimeout(() => {
                 let _nextTurnSeatNumber = this.getNextPlayerSeatNumber(_seatNumber);
                 this.broadcast(card_game_pb.Cmd.PLAYTURN_S2C, { seatNumber: _nextTurnSeatNumber, handCards: this.playerCardsDic[_nextTurnSeatNumber] });
-            }, 500);
+            }, 200);
         }
     }
     private playCards_S2C(data) {
@@ -342,12 +333,12 @@ export default class Server {
             let _socket = this.socketDic[_keyArr[i]];
             let _playerID = _socket.id;
             let _seatNumber = _socket.seat;
-            let _data = { "playerId": _playerID, "seatNumber": _seatNumber };
+            let _data = { playerId: _playerID, seatNumber: _seatNumber };
             this.send(_playerID, card_game_pb.Cmd.GAMESTART_S2C, _data);
         }
     }
 
-    /* private getPlayerIDBySeatNumber(seatNumber) {
+    private getPlayerIDBySeatNumber(seatNumber) {
         let _keyArr = Object.keys(this.socketDic);
         for (let i = 0; i < _keyArr.length; i++) {
             let _socket = this.socketDic[_keyArr[i]];
@@ -355,7 +346,16 @@ export default class Server {
             if (seatNumber == _seatNumber) return _socket.id;
         }
         return null;
-    } */
+    }
+    private getSocketBySeatNumber(seatNumber, socketDic: { [playerID: number]: WebSocket }) {
+        let _keyArr = Object.keys(socketDic);
+        for (let i = 0; i < _keyArr.length; i++) {
+            let _socket = this.socketDic[_keyArr[i]];
+            let _seatNumber = _socket.seat;
+            if (seatNumber == _seatNumber) return _socket;
+        }
+        return null;
+    }
 
     private broadMsg(msgStr) {
         this.broadcast(card_game_pb.Cmd.BROADCAST_MSG_S2C, { "msg": msgStr });
