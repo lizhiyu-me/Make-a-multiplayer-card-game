@@ -81,12 +81,15 @@ export default class GameSceneMediator extends BaseMediator {
         let _btnScore2 = cc.find("Canvas/controlPanel/scores/2");
         let _btnScore3 = cc.find("Canvas/controlPanel/scores/3");
         _btnScore1.on(cc.Node.EventType.TOUCH_START, () => {
+            this.hideControlPanel();
             this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 1);
         })
         _btnScore2.on(cc.Node.EventType.TOUCH_START, () => {
+            this.hideControlPanel();
             this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 2);
         })
         _btnScore3.on(cc.Node.EventType.TOUCH_START, () => {
+            this.hideControlPanel();
             this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 3);
         })
 
