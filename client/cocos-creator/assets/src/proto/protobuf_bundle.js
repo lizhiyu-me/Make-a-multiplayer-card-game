@@ -1952,7 +1952,6 @@ $root.PlayTurn_S2C = (function() {
      * @exports IPlayTurn_S2C
      * @interface IPlayTurn_S2C
      * @property {number|null} [seatNumber] PlayTurn_S2C seatNumber
-     * @property {Array.<number>|null} [handCards] PlayTurn_S2C handCards
      */
 
     /**
@@ -1964,7 +1963,6 @@ $root.PlayTurn_S2C = (function() {
      * @param {IPlayTurn_S2C=} [properties] Properties to set
      */
     function PlayTurn_S2C(properties) {
-        this.handCards = [];
         if (properties)
             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                 if (properties[keys[i]] != null)
@@ -1978,14 +1976,6 @@ $root.PlayTurn_S2C = (function() {
      * @instance
      */
     PlayTurn_S2C.prototype.seatNumber = 0;
-
-    /**
-     * PlayTurn_S2C handCards.
-     * @member {Array.<number>} handCards
-     * @memberof PlayTurn_S2C
-     * @instance
-     */
-    PlayTurn_S2C.prototype.handCards = $util.emptyArray;
 
     /**
      * Creates a new PlayTurn_S2C instance using the specified properties.
@@ -2013,12 +2003,6 @@ $root.PlayTurn_S2C = (function() {
             writer = $Writer.create();
         if (message.seatNumber != null && Object.hasOwnProperty.call(message, "seatNumber"))
             writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.seatNumber);
-        if (message.handCards != null && message.handCards.length) {
-            writer.uint32(/* id 2, wireType 2 =*/18).fork();
-            for (var i = 0; i < message.handCards.length; ++i)
-                writer.uint32(message.handCards[i]);
-            writer.ldelim();
-        }
         return writer;
     };
 
@@ -2055,16 +2039,6 @@ $root.PlayTurn_S2C = (function() {
             switch (tag >>> 3) {
             case 1:
                 message.seatNumber = reader.uint32();
-                break;
-            case 2:
-                if (!(message.handCards && message.handCards.length))
-                    message.handCards = [];
-                if ((tag & 7) === 2) {
-                    var end2 = reader.uint32() + reader.pos;
-                    while (reader.pos < end2)
-                        message.handCards.push(reader.uint32());
-                } else
-                    message.handCards.push(reader.uint32());
                 break;
             default:
                 reader.skipType(tag & 7);
@@ -2104,13 +2078,6 @@ $root.PlayTurn_S2C = (function() {
         if (message.seatNumber != null && message.hasOwnProperty("seatNumber"))
             if (!$util.isInteger(message.seatNumber))
                 return "seatNumber: integer expected";
-        if (message.handCards != null && message.hasOwnProperty("handCards")) {
-            if (!Array.isArray(message.handCards))
-                return "handCards: array expected";
-            for (var i = 0; i < message.handCards.length; ++i)
-                if (!$util.isInteger(message.handCards[i]))
-                    return "handCards: integer[] expected";
-        }
         return null;
     };
 
@@ -2128,13 +2095,6 @@ $root.PlayTurn_S2C = (function() {
         var message = new $root.PlayTurn_S2C();
         if (object.seatNumber != null)
             message.seatNumber = object.seatNumber >>> 0;
-        if (object.handCards) {
-            if (!Array.isArray(object.handCards))
-                throw TypeError(".PlayTurn_S2C.handCards: array expected");
-            message.handCards = [];
-            for (var i = 0; i < object.handCards.length; ++i)
-                message.handCards[i] = object.handCards[i] >>> 0;
-        }
         return message;
     };
 
@@ -2151,17 +2111,10 @@ $root.PlayTurn_S2C = (function() {
         if (!options)
             options = {};
         var object = {};
-        if (options.arrays || options.defaults)
-            object.handCards = [];
         if (options.defaults)
             object.seatNumber = 0;
         if (message.seatNumber != null && message.hasOwnProperty("seatNumber"))
             object.seatNumber = message.seatNumber;
-        if (message.handCards && message.handCards.length) {
-            object.handCards = [];
-            for (var j = 0; j < message.handCards.length; ++j)
-                object.handCards[j] = message.handCards[j];
-        }
         return object;
     };
 

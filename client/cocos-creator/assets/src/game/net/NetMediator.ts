@@ -26,7 +26,7 @@ export class NetMediator extends puremvc.Mediator {
         if (this[_msgName]) this[_msgName](_data);
     }
     private getGameModel(): GameModel {
-        return (puremvc.Facade.getInstance("GameFacade") as puremvc.Facade).retrieveProxy("GameModel");
+        return puremvc.Facade.getInstance("GameFacade").retrieveProxy("GameModel");
     }
     private getGameFacade(): GameFacade {
         return puremvc.Facade.getInstance("GameFacade") as GameFacade;
@@ -58,14 +58,8 @@ export class NetMediator extends puremvc.Mediator {
     }
     private PLAYTURN_S2C(data) {
         let _seatNumber = data.seatNumber;
-
-        let _gameModel = this.getGameModel();
-        // if (_seatNumber == _gameModel.mainServerSeatNumber) {
-        //update hand cards
-        if (data.handCards) _gameModel.cardsArr = _gameModel.sortByValue(data.handCards);
         let _notifNameSymbol = GameSceneMediator.eventObj[EGAME_SCENE_EVENT.PLAYTURN_S2C];
         this.getGameFacade().sendNotification(_notifNameSymbol, _seatNumber);
-        // }
     }
     private PLAYCARDS_S2C(data) {
         let _cardsPlayed = data.cards;
@@ -95,13 +89,16 @@ export class NetMediator extends puremvc.Mediator {
 
         console.log("Press Enter to restart.")
         // this.getInputFromCmd();
-        this.startGame();
+        this.reqStartGame();
     }
     private GAMESTART_S2C(data) {
         console.log("Game start.");
 
         let _gameModel = this.getGameModel();
         _gameModel.mainServerSeatNumber = data.seatNumber;
+        _gameModel.playerID = data.playerId;
+
+        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.SHOW_PLAYER_INFO_VIEW], { playerID: data.playerId, seatNumber: data.seatNumber });
     }
     private BROADCAST_MSG_S2C(data) {
         let _msg = data.msg;
@@ -109,13 +106,14 @@ export class NetMediator extends puremvc.Mediator {
     }
     //=== receive end ===
     //=== send begin ===
-    private startGame() {
+    private reqStartGame() {
         this.send({ cmd: card_game_pb.Cmd.READY_C2S, body: null });
     }
     private PLAYCARDS_C2S(cardsSerial: number[]) {
         let _gameModel = this.getGameModel();
+        let _seatNumber = _gameModel.mainServerSeatNumber;
         // if (cardsSerial.length != 0 || _gameModel.checkIsCardsLegal(cardsSerial)) {
-        this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: cardsSerial, seatNumber: _gameModel.mainServerSeatNumber } });
+        this.send({ cmd: card_game_pb.Cmd.PLAYCARDS_C2S, body: { cards: cardsSerial, seatNumber: _seatNumber } });
         // }
     }
     private READY_C2S(data) {

@@ -9,6 +9,7 @@ export enum EGAME_SCENE_EVENT {
     PLAYTURN_S2C,
     PLAYCARDS_S2C,
     REFRESH_HAND_CARDS_VIEW,
+    SHOW_PLAYER_INFO_VIEW,
 }
 export default class GameSceneMediator extends BaseMediator {
     static eventObj: { [key in EGAME_SCENE_EVENT]?: symbol } = {};
@@ -43,6 +44,9 @@ export default class GameSceneMediator extends BaseMediator {
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.REFRESH_HAND_CARDS_VIEW]:
                 let _curHandCards = this.getGameModel().cardsArr;
                 this.dealCards(_curHandCards);
+                break;
+            case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.SHOW_PLAYER_INFO_VIEW]:
+                this.showMainPlayerInfo(_data.playerID,_data.seatNumber)
                 break;
         }
     }
@@ -92,6 +96,7 @@ export default class GameSceneMediator extends BaseMediator {
         _btnPass.on(cc.Node.EventType.TOUCH_START, this.onPass_C2S.bind(this))
     }
     private onOutCards_C2S() {
+        this.hideControlPanel();
         let _outCardsSerial = [];
         let _cardsContainer = cc.find("Canvas/handList");
         let _cards = _cardsContainer.children;
@@ -102,8 +107,8 @@ export default class GameSceneMediator extends BaseMediator {
         this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, _outCardsSerial);
     }
     private showOutCards(serials: number[], seatNumber: number) {
-        let _outCardsContainer = cc.find("Canvas/outLists/" + seatNumber);
         this.clearOutList(seatNumber);
+        let _outCardsContainer = cc.find("Canvas/outLists/" + seatNumber);
 
         let _cardPrefabNode = cc.find("Canvas/prefabs/card");
         for (let i = 0; i < serials.length; i++) {
@@ -116,10 +121,12 @@ export default class GameSceneMediator extends BaseMediator {
         }
     }
     private clearOutList(seatNumber: number) {
-        let _outCardsContainer = cc.find("Canvas/outLists/" + seatNumber);
+        let _clientSeatNumber = this.getGameModel().getClientSeatNumber(seatNumber);
+        let _outCardsContainer = cc.find("Canvas/outLists/" + _clientSeatNumber);
         _outCardsContainer.removeAllChildren();
     }
     private onPass_C2S() {
+        this.hideControlPanel();
         this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, []);
     }
 
@@ -141,6 +148,15 @@ export default class GameSceneMediator extends BaseMediator {
             cc.find("Canvas/controlPanel/scores").active = false;
             cc.find("Canvas/controlPanel/operation").active = false;
         }
+    }
+    private hideControlPanel() {
+        cc.find("Canvas/controlPanel/scores").active = false;
+        cc.find("Canvas/controlPanel/operation").active = false;
+    }
+
+    private showMainPlayerInfo(playerID, serverSeatNumber) {
+        cc.find("Canvas/mainPlayerInfo/playerID").getComponent(cc.Label).string = playerID + "";
+        cc.find("Canvas/mainPlayerInfo/serverSeatNumber").getComponent(cc.Label).string = serverSeatNumber + "";
     }
 
     private setStatusLabel(text: string) {

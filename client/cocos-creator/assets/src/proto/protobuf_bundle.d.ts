@@ -1,4 +1,4 @@
-import * as $protobuf from "./lib/protobuf";
+import * as $protobuf from "./protobuf";
 /** Cmd enum. */
 export enum Cmd {
     NONE = 0,
@@ -791,9 +791,6 @@ export class PlayTurn_S2C implements IPlayTurn_S2C {
 
     /** PlayTurn_S2C seatNumber. */
     public seatNumber: number;
-
-    /** PlayTurn_S2C handCards. */
-    public handCards: number[];
 
     /**
      * Creates a new PlayTurn_S2C instance using the specified properties.

@@ -59,6 +59,7 @@ export default class GameModel extends puremvc.Proxy {
     public set mainServerSeatNumber(v: number) {
         this._mainSeverSeatNumber = v;
     }
+    playerID: number = -1;
     playerCount: number = 2;
     getClientSeatNumber(serverSeatNumber: number): number {
         if (this.mainServerSeatNumber === -1) {
