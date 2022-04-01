@@ -84,11 +84,9 @@ export class NetMediator extends puremvc.Mediator {
 
         let _gameModel = this.getGameModel();
         let _isWin = _winnerSeatNumber === _gameModel.mainServerSeatNumber;
-        let _content = _isWin ? "Congratulations, you win!" : "Oh, you lose.";
-        console.log(_content);
         _gameModel.resetWhenGameEnd();
 
-        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_END_S2C]);
+        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_END_S2C],{isWin:_isWin});
     }
     private GAMESTART_S2C(data) {
         console.log("Game start.");

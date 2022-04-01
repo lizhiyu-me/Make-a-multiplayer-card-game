@@ -52,6 +52,8 @@ export default class GameSceneMediator extends BaseMediator {
                 this.showMainPlayerInfo(_data.playerID, _data.seatNumber)
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_END_S2C]:
+                let _content = _data ? "Congratulations, you win!" : "Oh, you lose.";
+                this.setStatusLabel(_content);
                 let _btnStart = cc.find("Canvas/btnStart");
                 _btnStart.active = true;
                 break;
