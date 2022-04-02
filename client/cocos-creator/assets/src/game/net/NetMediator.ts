@@ -78,6 +78,7 @@ export class NetMediator extends puremvc.Mediator {
     }
     private ILLEGALCARDS_S2C(data) {
         console.log("Illegal Cards.");
+        this.getGameFacade().sendNotification(GameSceneMediator.eventObj[EGAME_SCENE_EVENT.ILLEGAL_CARDS_S2C]);
     }
     private GAMEEND_S2C(data) {
         let _winnerSeatNumber = data.seatNumber;

@@ -13,6 +13,7 @@ export enum EGAME_SCENE_EVENT {
     SHOW_PLAYER_INFO_VIEW,
     GAME_START_S2C,
     GAME_END_S2C,
+    ILLEGAL_CARDS_S2C,
 }
 export default class GameSceneMediator extends BaseMediator {
     static eventObj: { [key in EGAME_SCENE_EVENT]?: symbol } = {};
@@ -62,6 +63,9 @@ export default class GameSceneMediator extends BaseMediator {
                     let _btnStart = cc.find("Canvas/btnStart");
                     _btnStart.active = false;
                 }
+                break;
+            case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.ILLEGAL_CARDS_S2C]:
+                this.showControlPanelOperation();
                 break;
         }
     }
@@ -164,8 +168,8 @@ export default class GameSceneMediator extends BaseMediator {
         _btnScore1.active = curMaxScore == 0;
         _btnScore2.active = curMaxScore <= 1;
     }
-    private showControlPanelOperation(seatNumber: number) {
-        if (seatNumber == this.getGameModel().mainServerSeatNumber) {
+    private showControlPanelOperation(seatNumber?: number) {
+        if (seatNumber == this.getGameModel().mainServerSeatNumber || seatNumber == undefined) {
             cc.find("Canvas/controlPanel/scores").active = false;
             cc.find("Canvas/controlPanel/operation").active = true;
         } else {
@@ -186,6 +190,12 @@ export default class GameSceneMediator extends BaseMediator {
     private setStatusLabel(text: string) {
         cc.find("Canvas/status").getComponent(cc.Label).string = text;
     }
+
+   /*  private refreshPlayersRemainCount(countArr: Number[]) {
+        cc.find("Canvas/mainPlayerInfo/remainCount").getComponent(cc.Label).string = countArr[0] + "";
+        cc.find("Canvas/rightPlayerInfo/remainCount").getComponent(cc.Label).string = countArr[1] + "";
+        cc.find("Canvas/leftPlayerInfo/remainCount").getComponent(cc.Label).string = countArr[2] + "";
+    } */
 
     private getGameModel(): GameModel {
         return puremvc.Facade.getInstance("GameFacade").retrieveProxy("GameModel");
