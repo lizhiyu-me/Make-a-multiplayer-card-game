@@ -1,5 +1,5 @@
 import { puremvc } from "../../lib/puremvc";
-import * as card_game_pb from "../../proto/protobuf_bundle";
+import * as card_game_pb from "../../../../../share/proto/card-game";
 import BaseMediator from "../base/BaseMediator";
 import GameModel from "../model/GameModel";
 
