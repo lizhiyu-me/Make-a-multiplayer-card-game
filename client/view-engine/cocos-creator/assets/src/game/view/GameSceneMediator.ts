@@ -25,6 +25,8 @@ export interface IGameSceneView {
     setLabel(labelComp, text),
     removeAllChildren(parent),
     addChild(child, parent),
+    isCardSelected(card),
+    toggleCardSelectedStatus(card)
 }
 export default class GameSceneMediator extends BaseMediator {
     static eventObj: { [key in EGAME_SCENE_EVENT]?: symbol } = {};
@@ -91,7 +93,7 @@ export default class GameSceneMediator extends BaseMediator {
             _card["_d_cardSerial"] = _cardSerial;
             this.mViewClass.setCard(_card, this.getGameModel().getCardReadableName(_cardSerial));
             this.mViewClass.addClickListener(_card, () => {
-                _card.y = _card.y == 0 ? 30 : 0;
+                this.mViewClass.toggleCardSelectedStatus(_card);
             }, this);
             this.mViewClass.addChild(_card, _cardsContainer);
         }
@@ -136,7 +138,7 @@ export default class GameSceneMediator extends BaseMediator {
         let _cards = _cardsContainer.children;
         for (let i = 0; i < _cards.length; i++) {
             let _card = _cards[i];
-            if (_card.y != 0) _outCardsSerial.push(_card["_d_cardSerial"]);
+            if (this.mViewClass.isCardSelected(_card)) _outCardsSerial.push(_card["_d_cardSerial"]);
         }
         this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, _outCardsSerial);
     }

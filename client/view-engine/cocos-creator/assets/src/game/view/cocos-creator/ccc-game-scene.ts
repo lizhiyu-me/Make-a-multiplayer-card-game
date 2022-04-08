@@ -45,4 +45,10 @@ export default class CCC_Game_Scene extends cc.Component implements IGameSceneVi
     addChild(child, parent) {
         parent.addChild(child);
     }
+    isCardSelected(card) {
+        return card.y == 30;
+    }
+    toggleCardSelectedStatus(card) {
+        card.y = card.y == 0 ? 30 : 0;
+    }
 }
