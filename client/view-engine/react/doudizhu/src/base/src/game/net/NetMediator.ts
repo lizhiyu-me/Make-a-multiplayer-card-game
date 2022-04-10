@@ -47,6 +47,7 @@ export class NetMediator extends puremvc.Mediator {
         }
     }
     private DEALCARDS_S2C(data) {
+        console.log("NetMediator::DEALCARDS_S2C data ",data)
         let _cards = data.cards;
 
         let _gameModel = this.getGameModel();

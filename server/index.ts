@@ -24,9 +24,10 @@ export default class Server {
         });
     }
     private selectPlayerCount() {
-        console.log("Please input the player count (2 or 3) to create a server:");
-        let _playerCountStr = this.getInputFromCmd();
-        let _playerCount = +_playerCountStr;
+        // console.log("Please input the player count (2 or 3) to create a server:");
+        // let _playerCountStr = this.getInputFromCmd();
+        // let _playerCount = +_playerCountStr;
+        let _playerCount = 2;
         if (_playerCount == 2 || _playerCount == 3) {
             this.playerCount = _playerCount;
         } else {
@@ -139,6 +140,7 @@ export default class Server {
     private initialCardCount = 17;
     private lordCardsCount = 3;
     private dealCards_S2C() {
+        console.log("dealCards_S2C")
         let _pokerPool = this.shuffleArr(this.POKER_VALUES.slice());
         for (let i = 0; i < this.playerCount; i++) {
             this.playerCardsDic[i] =
@@ -166,6 +168,7 @@ export default class Server {
 
             this.mIsGaming = true;
             this.roundStart();
+            this.dealCards_S2C();
             let _firstCompeteLordPlayerSeatNumber = Math.floor(Math.random() * this.playerCount);
             this.broadcast(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_S2C, { seatNumber: _firstCompeteLordPlayerSeatNumber, curMaxScore: this.maxCalledLordScore })
         }

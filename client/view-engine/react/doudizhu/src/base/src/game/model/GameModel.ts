@@ -91,8 +91,21 @@ export default class GameModel extends puremvc.Proxy {
         }
         return _res;
     }
+    
+    private _cardsArr : number[] = [1,2,4];
+    public get cardsArr() : number[] {
+        return this._cardsArr;
+    }
+    public set cardsArr(v : number[]) {
+        this._cardsArr = v;
+        this.mCardsArrHook && this.mCardsArrHook(v)
+    }
 
-    cardsArr: number[] = [];
+    private mCardsArrHook;
+    setCardsArrHook(hook:Function){
+        this.mCardsArrHook = hook; 
+    }
+    
     getCardValue(cardSerialNumber) {
         let _cardNumber;
         let _cardNumberWithoutSuit = cardSerialNumber % 0x10;
@@ -117,6 +130,7 @@ export default class GameModel extends puremvc.Proxy {
             let _idx = _handCardsArr.indexOf(item);
             _handCardsArr.splice(_idx, 1);
         }
+        this.cardsArr = _handCardsArr; 
         return _handCardsArr;
     }
 

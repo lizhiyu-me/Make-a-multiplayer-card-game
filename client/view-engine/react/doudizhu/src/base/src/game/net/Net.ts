@@ -12,6 +12,7 @@ export class Net {
         this.mSocket.binaryType = "arraybuffer";
 
         this.mSocket.addEventListener('open', () => {
+            console.log("connect success");
             cb && cb();
         })
         this.mSocket.addEventListener('message', (buffer) => {

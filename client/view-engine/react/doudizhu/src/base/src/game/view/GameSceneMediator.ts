@@ -26,12 +26,15 @@ export interface IGameSceneView {
     removeAllChildren(parent),
     addChild(child, parent),
     isCardSelected(card),
-    toggleCardSelectedStatus(card)
+    toggleCardSelectedStatus(card),
+    showComponent(comp),
+    hideComponent(comp)
 }
 export default class GameSceneMediator extends BaseMediator {
     static eventObj: { [key in EGAME_SCENE_EVENT]?: symbol } = {};
     constructor(viewComponent, viewClass, private mViewClass: IGameSceneView = viewClass) {
         super("GameSceneMediator", viewComponent);
+        
     }
     listNotificationInterests() {
         return this.getNotificationSymbols(EGAME_SCENE_EVENT, GameSceneMediator);
@@ -69,12 +72,12 @@ export default class GameSceneMediator extends BaseMediator {
                 let _content = _data ? "Congratulations, you win!" : "Oh, you lose.";
                 this.setStatusLabel(_content);
                 let _btnStart = this.mViewClass.getViewComponent("btnStart");
-                _btnStart.active = true;
+                this.mViewClass.showComponent(_btnStart);
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.GAME_START_S2C]:
                 {
                     let _btnStart = this.mViewClass.getViewComponent("btnStart");
-                    _btnStart.active = false;
+                    this.mViewClass.hideComponent(_btnStart);
                 }
                 break;
             case GameSceneMediator.eventObj[EGAME_SCENE_EVENT.ILLEGAL_CARDS_S2C]:
@@ -84,32 +87,44 @@ export default class GameSceneMediator extends BaseMediator {
     }
 
     dealCards(cards: number[]) {
+        console.log("GameSceneMediator::dealCards::cards ", cards)
         let _cardsContainer = this.mViewClass.getViewComponent("handList");
         this.mViewClass.removeAllChildren(_cardsContainer);
-        let _cardPrefabNode = this.mViewClass.getViewComponent("prefabs/card");
+        let _cardPrefabNode = this.mViewClass.getViewComponent("card");
+        let _cardCount = cards.length;
+        let _beginX = -_cardCount * 40 / 2 + 60;
         for (let i = 0; i < cards.length; i++) {
             let _cardSerial = cards[i];
             let _card = this.mViewClass.getNewViewComponent(_cardPrefabNode);
-            _card["_d_cardSerial"] = _cardSerial;
+            _card && (_card["_d_cardSerial"] =_card["data-card-serial"] = _cardSerial);
             this.mViewClass.setCard(_card, this.getGameModel().getCardReadableName(_cardSerial));
             this.mViewClass.addClickListener(_card, () => {
                 this.mViewClass.toggleCardSelectedStatus(_card);
             }, this);
+            _card.style.left = _beginX+i * 40 + "px"
             this.mViewClass.addChild(_card, _cardsContainer);
         }
     }
 
     onRegister(): void {
         this.addViewComponentEvent();
-
+        this.initViewComp();
         this.getNetFacade().sendNotification(card_game_pb.Cmd.READY_C2S);
         this.setStatusLabel("Waiting for other players");
     }
 
+    private initViewComp(){
+        let _scorePanel = this.mViewClass.getViewComponent("controlPanel-scores");
+        let _operationPanel = this.mViewClass.getViewComponent("controlPanel-operation");
+        _scorePanel.style.visibility = "hidden";
+        _operationPanel.style.visibility = "hidden";
+
+    }
+
     private addViewComponentEvent() {
-        let _btnScore1 = this.mViewClass.getViewComponent("controlPanel/scores/1");
-        let _btnScore2 = this.mViewClass.getViewComponent("controlPanel/scores/2");
-        let _btnScore3 = this.mViewClass.getViewComponent("controlPanel/scores/3");
+        let _btnScore1 = this.mViewClass.getViewComponent("controlPanel-scores-1");
+        let _btnScore2 = this.mViewClass.getViewComponent("controlPanel-scores-2");
+        let _btnScore3 = this.mViewClass.getViewComponent("controlPanel-scores-3");
         this.mViewClass.addClickListener(_btnScore1, () => {
             this.hideControlPanel();
             this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 1);
@@ -123,9 +138,9 @@ export default class GameSceneMediator extends BaseMediator {
             this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 3);
         }, this)
 
-        let _btnOut = this.mViewClass.getViewComponent("controlPanel/operation/out");
-        let _btnPass = this.mViewClass.getViewComponent("controlPanel/operation/pass");
-        this.mViewClass.addClickListener(_btnOut, this.onOutCards_C2S.bind(this), this)
+        let _btnPlay = this.mViewClass.getViewComponent("controlPanel-operation-play");
+        let _btnPass = this.mViewClass.getViewComponent("controlPanel-operation-pass");
+        this.mViewClass.addClickListener(_btnPlay, this.onOutCards_C2S.bind(this), this)
         this.mViewClass.addClickListener(_btnPass, this.onPass_C2S.bind(this), this)
 
         let _btnStart = this.mViewClass.getViewComponent("btnStart");
@@ -138,7 +153,9 @@ export default class GameSceneMediator extends BaseMediator {
         let _cards = _cardsContainer.children;
         for (let i = 0; i < _cards.length; i++) {
             let _card = _cards[i];
-            if (this.mViewClass.isCardSelected(_card)) _outCardsSerial.push(_card["_d_cardSerial"]);
+            if (this.mViewClass.isCardSelected(_card)) {
+                _outCardsSerial.push(_card["_d_cardSerial"] || _card.getAttribute("data-card-serial"));
+            }
         }
         this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, _outCardsSerial);
     }
@@ -168,27 +185,28 @@ export default class GameSceneMediator extends BaseMediator {
     }
 
     private showControlPanelScores(curMaxScore: number) {
-        this.mViewClass.getViewComponent("controlPanel/scores").active = true;
-        this.mViewClass.getViewComponent("controlPanel/operation").active = false;
+        console.log("showControlPanelScores")
+        this.mViewClass.showComponent(this.mViewClass.getViewComponent("controlPanel-scores"));
+        this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-operation"));
 
-        let _btnScore1 = this.mViewClass.getViewComponent("controlPanel/scores/1");
-        let _btnScore2 = this.mViewClass.getViewComponent("controlPanel/scores/2");
+        let _btnScore1 = this.mViewClass.getViewComponent("controlPanel-scores-1");
+        let _btnScore2 = this.mViewClass.getViewComponent("controlPanel-scores-2");
 
-        _btnScore1.active = curMaxScore == 0;
-        _btnScore2.active = curMaxScore <= 1;
+        curMaxScore == 0 ? this.mViewClass.showComponent(_btnScore1) : this.mViewClass.hideComponent(_btnScore1);
+        curMaxScore <= 1 ? this.mViewClass.showComponent(_btnScore2) : this.mViewClass.hideComponent(_btnScore2);
     }
     private showControlPanelOperation(seatNumber?: number) {
         if (seatNumber == this.getGameModel().mainServerSeatNumber || seatNumber == undefined) {
-            this.mViewClass.getViewComponent("controlPanel/scores").active = false;
-            this.mViewClass.getViewComponent("controlPanel/operation").active = true;
+            this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-scores"));
+            this.mViewClass.showComponent(this.mViewClass.getViewComponent("controlPanel-operation"));
         } else {
-            this.mViewClass.getViewComponent("controlPanel/scores").active = false;
-            this.mViewClass.getViewComponent("controlPanel/operation").active = false;
+            this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-scores"));
+            this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-operation"));
         }
     }
     private hideControlPanel() {
-        this.mViewClass.getViewComponent("controlPanel/scores").active = false;
-        this.mViewClass.getViewComponent("controlPanel/operation").active = false;
+        this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-scores"));
+        this.mViewClass.hideComponent(this.mViewClass.getViewComponent("controlPanel-operation"));
     }
 
     private showMainPlayerInfo(playerID, serverSeatNumber) {
