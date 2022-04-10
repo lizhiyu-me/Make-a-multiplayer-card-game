@@ -8,8 +8,8 @@ function App(props: any) {
     <div className="App">
       <div>
         <div id='handList' className="bottom-center">
-          {props.handListSerials.map((serial:number) => {
-            return (<Card face={gameModel.getCardReadableName(serial)}/>)
+          {props.handListSerials.map((serial:number,idx) => {
+            return (<Card face={gameModel.getCardReadableName(serial)} idx={idx}/>)
           })}
         </div>
       </div>
