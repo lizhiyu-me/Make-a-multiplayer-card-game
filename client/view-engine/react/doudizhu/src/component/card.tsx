@@ -1,9 +1,7 @@
 
 export default function Card(props: any) {
-    //classic react implementation
     let _selectedOffsetY = "-20px";
     let _beginX = props.beginX;
-    // this["_d_cardSerial"] = props.serial;
     return (
         <div id='card'
             onClick={(e) => {
@@ -13,17 +11,9 @@ export default function Card(props: any) {
             }}
             style={{left: _beginX+props.idx * 40 + "px"}} data-card-serial={props.serial}
             >
-            <div style={{ top: 0, left: 0 }}>
+            <div style={{ top: 0, left: 0 ,userSelect:"none"}}>
                 {props.face}
             </div>
         </div>
     )
-
-    //alternative implementation
-    /* return (
-        <div id='card'>
-            <div style={{ top: 0, left: 0 }}>
-            </div>
-        </div>
-    ) */
 }

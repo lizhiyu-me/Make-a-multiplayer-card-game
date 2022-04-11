@@ -119,7 +119,6 @@ export default class GameSceneMediator extends BaseMediator {
         let _operationPanel = this.mViewClass.getViewComponent("controlPanel-operation");
         _scorePanel.style.visibility = "hidden";
         _operationPanel.style.visibility = "hidden";
-
     }
 
     private addViewComponentEvent() {
@@ -192,9 +191,14 @@ export default class GameSceneMediator extends BaseMediator {
 
         let _btnScore1 = this.mViewClass.getViewComponent("controlPanel-scores-1");
         let _btnScore2 = this.mViewClass.getViewComponent("controlPanel-scores-2");
+        let _btnScore3 = this.mViewClass.getViewComponent("controlPanel-scores-3");
 
-        curMaxScore == 0 ? this.mViewClass.showComponent(_btnScore1) : this.mViewClass.hideComponent(_btnScore1);
-        curMaxScore <= 1 ? this.mViewClass.showComponent(_btnScore2) : this.mViewClass.hideComponent(_btnScore2);
+        if(curMaxScore == 1){
+            _btnScore1.disabled = true;
+        }else if(curMaxScore == 2){
+            _btnScore1.disabled = true;
+            _btnScore2.disabled = true;
+        }
     }
     private showControlPanelOperation(seatNumber?: number) {
         if (seatNumber == this.getGameModel().mainServerSeatNumber || seatNumber == undefined) {

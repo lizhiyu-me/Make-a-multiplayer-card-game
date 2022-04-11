@@ -11,8 +11,6 @@
     "@types/protobufjs": "^6.0.0",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",
-    "cross-env": "^7.0.3",
-    "env-cmd": "^10.1.0",
     "protobufjs": "^6.11.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
