@@ -2,7 +2,6 @@ import BaseMediator from "./base/BaseMediator";
 
 export enum ECOMMON_MEDIATOR_EVENT {
     // SERVER_CONNECTED,
-
 }
 export default class CommonMediator extends BaseMediator {
     static eventObj: { [key in ECOMMON_MEDIATOR_EVENT]?: symbol } = {};

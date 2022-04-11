@@ -1,23 +1,18 @@
 export default class GameSceneView {
-    constructor() {
-
-    }
+    constructor() { }
     getViewComponent(name: string) {
-        // let _name = name.replace(/"\/"/g, "-");
         return document.getElementById(name);
     }
     getNewViewComponent(comp) {
         if (!comp) return;
         return comp.cloneNode(true);
     }
-    getChild(childPath, parent) {
-
-    }
+    getChild(childPath, parent) { }
     addClickListener(comp, handler, target) {
-        comp&&comp.addEventListener("click", handler, target);
+        comp && comp.addEventListener("click", handler, target);
     }
     setCard(card, name) {
-        if(card){
+        if (card) {
             card.children[0].innerText = name;
             card.style.visibility = "visible"
         }
@@ -27,13 +22,13 @@ export default class GameSceneView {
     }
     removeAllChildren(parent) {
         // parent.innerHTML = "";
-        if(!parent) return
-        while(parent.firstChild){
+        if (!parent) return
+        while (parent.firstChild) {
             parent.removeChild(parent.firstChild);
         }
     }
     addChild(child, parent) {
-        (child&&parent)&& parent.appendChild(child);
+        (child && parent) && parent.appendChild(child);
     }
     isCardSelected(card) {
         return card.style.top == "-20px" ? true : false;
@@ -43,7 +38,6 @@ export default class GameSceneView {
         card["style"]["top"] = _top != "-20px" ? "-20px" : "0";
     }
     showComponent(comp) {
-        console.log("showComponent")
         comp && (comp.style.visibility = "visible");
     }
     hideComponent(comp) {

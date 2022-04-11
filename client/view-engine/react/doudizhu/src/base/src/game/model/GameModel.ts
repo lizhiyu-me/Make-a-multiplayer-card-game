@@ -92,7 +92,7 @@ export default class GameModel extends puremvc.Proxy {
         return _res;
     }
     
-    private _cardsArr : number[] = [1,2,4];
+    private _cardsArr : number[] = [1,2,6];
     public get cardsArr() : number[] {
         return this._cardsArr;
     }

@@ -1,7 +1,6 @@
 body {
   margin: 0;
 }
-
 .App {
   position: absolute;
   top: 50%;
@@ -11,7 +10,6 @@ body {
   width: 60%;
   height: 60%;
 }
-
 .bottom-center {
   position: absolute;
   left: 50%;
@@ -19,7 +17,6 @@ body {
   width: auto;
   height: 20%;
 }
-
 #card {
   display: inline-block;
   position: absolute;

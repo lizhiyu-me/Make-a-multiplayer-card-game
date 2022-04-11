@@ -9,5 +9,4 @@ export default class GameFacade extends puremvc.Facade {
         this.registerProxy(new GameModel());
         this.registerMediator(new CommonMediator());
     }
-
 }

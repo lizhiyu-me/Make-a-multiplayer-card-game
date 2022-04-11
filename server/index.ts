@@ -9,7 +9,7 @@ export default class Server {
     private mServer: WebSocket.Server;
     constructor(private mRuler = new Ruler()) {
         this.mServer = new WebSocket.Server({ port: this.port }, () => {
-            console.log(`server started at port ${this.port}`);
+            console.log(`server listening on ${this.port}`);
         });
         this.selectPlayerCount();
 
