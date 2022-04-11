@@ -87,6 +87,7 @@ export default class GameSceneMediator extends BaseMediator {
     }
 
     dealCards(cards: number[]) {
+        return;
         console.log("GameSceneMediator::dealCards::cards ", cards)
         let _cardsContainer = this.mViewClass.getViewComponent("handList");
         this.mViewClass.removeAllChildren(_cardsContainer);

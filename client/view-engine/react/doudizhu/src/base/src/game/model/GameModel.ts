@@ -124,7 +124,7 @@ export default class GameModel extends puremvc.Proxy {
     }
 
     removePlayerCards(playedCards) {
-        let _handCardsArr = this.cardsArr;
+        let _handCardsArr = this.cardsArr.slice();
         for (let i = 0; i < playedCards.length; i++) {
             let item = playedCards[i];
             let _idx = _handCardsArr.indexOf(item);

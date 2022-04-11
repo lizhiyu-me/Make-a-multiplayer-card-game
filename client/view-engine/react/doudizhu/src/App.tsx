@@ -39,9 +39,9 @@ function App(props: any) {
 
         <div id='handList' className="bottom-center">
           {/* classic react implementation */}
-          {/* {cardArr.map((serial:number,idx) => {
-            return (<Card key={"k"+serial} face={gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial}/>)
-          })} */}
+          {cardArr.map((serial:number,idx) => {
+            return (<Card key={"k"+serial} face={_gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial}/>)
+          })}
         </div>
       </div>
     </div>
