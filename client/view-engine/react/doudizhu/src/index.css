@@ -1,13 +1,10 @@
-body {
-  margin: 0;
-}
 .App {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border: 1em solid #868282;
-  width: 60%;
+  width: 96%;
   height: 60%;
 }
 .bottom-center {
@@ -16,6 +13,32 @@ body {
   bottom: 0;
   width: auto;
   height: 159px;
+}
+.out-list-main {
+  position: absolute;
+  left: 50%;
+  bottom: 220px;
+  width: auto;
+  height: 159px;
+  border: .2em solid #25d1e7;
+}
+.out-list-right {
+  position: absolute;
+  right: 50px;
+  bottom: 360px;
+  width: auto;
+  height: 159px;
+  border: .2em solid #25d1e7;
+  align-content: right;
+}
+.out-list-left {
+  position: absolute;
+  left: 50px;
+  bottom: 360px;
+  width: auto;
+  height: 159px;
+  border: .2em solid #25d1e7;
+  text-align: left;
 }
 #card {
   display: inline-block;

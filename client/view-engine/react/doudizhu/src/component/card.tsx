@@ -9,11 +9,11 @@ export default function Card(props: any) {
                 let _top = e.target["style"]["top"]
                 e.target["style"]["top"] = _top != _selectedOffsetY ? _selectedOffsetY : "0";
             }}
-            style={{left: _beginX+props.idx * 40 + "px"}} data-card-serial={props.serial}
-            >
-            <div style={{ top: 0, left: 0 ,userSelect:"none"}}>
+            style={{ left: _beginX + props.idx * 40 + "px" }} data-card-serial={props.serial}
+        >
+            <span style={{ userSelect: "none" ,fontSize:"32px"}}>
                 {props.face}
-            </div>
+            </span>
         </div>
     )
 }

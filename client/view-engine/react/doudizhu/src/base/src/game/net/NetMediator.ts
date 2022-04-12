@@ -66,6 +66,13 @@ export class NetMediator extends puremvc.Mediator {
         let _cardsPlayed = data.cards;
         let _seatNumber = data.seatNumber;
 
+        let _gameModel = this.getGameModel();
+        let _clientSeatNumber = _gameModel.getClientSeatNumber(_seatNumber);
+        let _outCards = _gameModel.outCards.slice();
+        _outCards[_clientSeatNumber] = _cardsPlayed;
+        _gameModel.outCards = _outCards;
+
+
         if (_cardsPlayed.length == 0) {
             console.log(`Player ${_seatNumber}-> passed.`)
         } else {

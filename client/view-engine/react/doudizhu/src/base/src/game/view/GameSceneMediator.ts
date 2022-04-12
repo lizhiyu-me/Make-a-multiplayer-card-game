@@ -87,8 +87,7 @@ export default class GameSceneMediator extends BaseMediator {
     }
 
     dealCards(cards: number[]) {
-        return;
-        console.log("GameSceneMediator::dealCards::cards ", cards)
+       /*  console.log("GameSceneMediator::dealCards::cards ", cards)
         let _cardsContainer = this.mViewClass.getViewComponent("handList");
         this.mViewClass.removeAllChildren(_cardsContainer);
         let _cardPrefabNode = this.mViewClass.getViewComponent("card");
@@ -104,13 +103,13 @@ export default class GameSceneMediator extends BaseMediator {
             }, this);
             _card.style.left = _beginX+i * 40 + "px"
             this.mViewClass.addChild(_card, _cardsContainer);
-        }
+        } */
     }
 
     onRegister(): void {
         this.addViewComponentEvent();
         this.initViewComp();
-        this.getNetFacade().sendNotification(card_game_pb.Cmd.READY_C2S);
+        this.getNetFacade()?.sendNotification(card_game_pb.Cmd.READY_C2S);
         this.setStatusLabel("Waiting for other players");
     }
 
@@ -127,15 +126,15 @@ export default class GameSceneMediator extends BaseMediator {
         let _btnScore3 = this.mViewClass.getViewComponent("controlPanel-scores-3");
         this.mViewClass.addClickListener(_btnScore1, () => {
             this.hideControlPanel();
-            this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 1);
+            this.getNetFacade()?.sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 1);
         }, this)
         this.mViewClass.addClickListener(_btnScore2, () => {
             this.hideControlPanel();
-            this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 2);
+            this.getNetFacade()?.sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 2);
         }, this)
         this.mViewClass.addClickListener(_btnScore3, () => {
             this.hideControlPanel();
-            this.getNetFacade().sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 3);
+            this.getNetFacade()?.sendNotification(card_game_pb.Cmd.COMPETEFORLANDLORDROLE_C2S, 3);
         }, this)
 
         let _btnPlay = this.mViewClass.getViewComponent("controlPanel-operation-play");
@@ -157,11 +156,11 @@ export default class GameSceneMediator extends BaseMediator {
                 _outCardsSerial.push(_card["_d_cardSerial"] || _card.getAttribute("data-card-serial"));
             }
         }
-        this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, _outCardsSerial);
+        this.getNetFacade()?.sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, _outCardsSerial);
     }
     private showOutCards(serials: number[], seatNumber: number) {
         this.clearOutList(seatNumber);
-        let _outCardsContainer = this.mViewClass.getViewComponent("outLists/" + seatNumber);
+        /* let _outCardsContainer = this.mViewClass.getViewComponent("out-list-" + seatNumber);
 
         let _cardPrefabNode = this.mViewClass.getViewComponent("prefabs/card");
         for (let i = 0; i < serials.length; i++) {
@@ -169,19 +168,19 @@ export default class GameSceneMediator extends BaseMediator {
             let _card = this.mViewClass.getNewViewComponent(_cardPrefabNode);
             this.mViewClass.setCard(_card, this.getGameModel().getCardReadableName(_cardSerial));
             this.mViewClass.addChild(_card, _outCardsContainer);
-        }
+        } */
     }
     private clearOutList(seatNumber: number) {
         let _clientSeatNumber = this.getGameModel().getClientSeatNumber(seatNumber);
-        let _outCardsContainer = this.mViewClass.getViewComponent("outLists/" + _clientSeatNumber);
+        let _outCardsContainer = this.mViewClass.getViewComponent("out-list-" + _clientSeatNumber);
         this.mViewClass.removeAllChildren(_outCardsContainer);
     }
     private onPass_C2S() {
         this.hideControlPanel();
-        this.getNetFacade().sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, []);
+        this.getNetFacade()?.sendNotification(card_game_pb.Cmd.PLAYCARDS_C2S, []);
     }
     private onReady_C2S() {
-        this.getNetFacade().sendNotification(card_game_pb.Cmd.READY_C2S);
+        this.getNetFacade()?.sendNotification(card_game_pb.Cmd.READY_C2S);
     }
 
     private showControlPanelScores(curMaxScore: number) {
@@ -191,7 +190,6 @@ export default class GameSceneMediator extends BaseMediator {
 
         let _btnScore1 = this.mViewClass.getViewComponent("controlPanel-scores-1");
         let _btnScore2 = this.mViewClass.getViewComponent("controlPanel-scores-2");
-        let _btnScore3 = this.mViewClass.getViewComponent("controlPanel-scores-3");
 
         if(curMaxScore == 1){
             _btnScore1.disabled = true;

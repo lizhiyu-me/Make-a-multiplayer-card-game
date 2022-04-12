@@ -92,18 +92,33 @@ export default class GameModel extends puremvc.Proxy {
         return _res;
     }
     
-    private _cardsArr : number[] = [1,2,6];
+    private _cardsArr : number[] = [];
     public get cardsArr() : number[] {
         return this._cardsArr;
     }
     public set cardsArr(v : number[]) {
         this._cardsArr = v;
-        this.mCardsArrHook && this.mCardsArrHook(v)
+        this.mMainCardsHook && this.mMainCardsHook(v)
     }
 
-    private mCardsArrHook;
-    setCardsArrHook(hook:Function){
-        this.mCardsArrHook = hook; 
+    
+    private _outCards : number[][] = [[],[],[]];
+    public get outCards() : number[][] {
+        return this._outCards;
+    }
+    public set outCards(v : number[][]) {
+        this._outCards = v;
+        this.mOutCardsHook && this.mOutCardsHook(v)
+    }
+    
+
+    private mMainCardsHook;
+    setMainHandCardsHook(hook:Function){
+        this.mMainCardsHook = hook; 
+    }
+    private mOutCardsHook;
+    setOutCardsHook(hook:Function){
+        this.mOutCardsHook = hook; 
     }
     
     getCardValue(cardSerialNumber) {
@@ -143,13 +158,4 @@ export default class GameModel extends puremvc.Proxy {
     resetWhenGameEnd() {
         this.mainServerSeatNumber = null;
     }
-
-    /* checkIsCardsLegal(cardsNumberStr) {
-        let _cardsNumberStrArr = cardsNumberStr.split(",");
-        for (let i = 0; i < _cardsNumberStrArr.length; i++) {
-            const _cardNumberStr = _cardsNumberStrArr[i];
-            if (!this.cardNameNumberDic[_cardNumberStr]) return false;
-        }
-        return true;
-    } */
 }
