@@ -18,7 +18,7 @@ export default class GameSceneView {
         }
     }
     setLabel(labelComp, text) {
-        labelComp.innerText = text;
+        labelComp&&(labelComp.innerText = text);
     }
     removeAllChildren(parent) {
         // parent.innerHTML = "";
