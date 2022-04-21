@@ -14,7 +14,6 @@ export default function App(props: any) {
   let _cardCount = mainHandCards.length;
   let _beginX = (-_cardCount * 40 - 60) / 2;
   useEffect(() => {
-    console.log(1123);
     if (_gameFacade.retrieveMediator("GameSceneMediator") == null) {
       _gameFacade.registerMediator(new GameSceneMediator(this, new GameSceneView()));
     }
