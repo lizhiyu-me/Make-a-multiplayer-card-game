@@ -173,7 +173,6 @@ export default class GameSceneMediator extends BaseMediator {
     private clearOutList(seatNumber: number) {
         let _clientSeatNumber = this.getGameModel().getClientSeatNumber(seatNumber);
         let _outCardsContainer = this.mViewClass.getViewComponent("out-list-" + _clientSeatNumber,false,this.getGameModel().context);
-        this.mViewClass.removeAllChildren(_outCardsContainer);
     }
     private onPass_C2S() {
         this.hideControlPanel();

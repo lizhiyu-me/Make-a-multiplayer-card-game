@@ -63,7 +63,7 @@ const R3fScene = (props: { mainHandCards: number[], gameModel, outCards: number[
   }
 
   let _cardCount = mainHandCards.length;
-  let _beginX = -_cardCount * .5;
+  let _beginX = -((_cardCount-1) * .5+1.5)/2 ;
   return (
     <>
       <CameraControls />
