@@ -15,7 +15,6 @@ import GameSceneView from "./component/GameSceneView";
 extend({ OrbitControls });
 
 const CameraControls = () => {
-  // const deg2rad = (degrees: number) => degrees * (Math.PI / 180);
   const {
     camera,
     gl: { domElement }
@@ -40,9 +39,10 @@ const CameraControls = () => {
   );
 };
 
-const R3fScene = (props: { mainHandCards: number[], gameModel,outCards:number[][] }) => {
+const R3fScene = (props: { mainHandCards: number[], gameModel, outCards: number[][] }) => {
   const {
-    scene
+    scene,
+    camera,
   } = useThree();
   useEffect(() => {
     console.log(scene.getObjectByName("handList"))
@@ -111,10 +111,11 @@ function App(props: any) {
   return (
     <>
       <div id='canvas-container'>
-        <Canvas>
+        <Canvas orthographic camera={{ zoom: 50, position: [0, 0, 100], rotation: [0, 0, 0] }}>
           <R3fScene mainHandCards={mainHandCards} outCards={outCards} gameModel={_gameModel}></R3fScene>
         </Canvas>
       </div>
+      
       <div id="status" style={{ display: 'fix', textAlign: 'center', fontSize: "2em", userSelect: "none" }}>hello</div>
       <div id='controlPanel-scores' className='controlPanel'>
         <button id='controlPanel-scores-1' className='controlButton'>1</button>
@@ -126,32 +127,6 @@ function App(props: any) {
         <button id='controlPanel-operation-pass' className='controlButton'>pass</button>
         <button id='controlPanel-operation-play' className='controlButton'>play</button>
       </div>
-      {/* <div id="outlist-0" className='out-list-main'>
-          {outCards[0].map((serial, idx) => {
-            return (<Card key={"k" + serial} faceTextureUrl={_gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial} />)
-          })
-          }
-        </div>
-        <div id="outlist-1" className='out-list-right'>
-          {
-            outCards[1].map((serial, idx) => {
-              return (<Card key={"k" + serial} faceTextureUrl={_gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial} />)
-            })
-          }
-        </div>
-        <div id="outlist-2" className='out-list-left'>
-          {
-            outCards[2].map((serial, idx) => {
-              return (<Card key={"k" + serial} faceTextureUrl={_gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial} />)
-            })
-          }
-        </div>
-        <div id='handList' className="bottom-center">
-          {mainHandCards.map((serial: number, idx) => {
-            return (<Card key={"k" + serial} faceTextureUrl={_gameModel.getCardReadableName(serial)} idx={idx} beginX={_beginX} serial={serial} />)
-          })}
-        </div> */}
-
     </>
   );
 }

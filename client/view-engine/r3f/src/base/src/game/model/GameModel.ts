@@ -23,8 +23,6 @@ export default class GameModel extends puremvc.Proxy {
         '5': 0x05,
         '4': 0x04,
         '3': 0x03,
-        'rjkr': 0x0f,
-        'bjkr': 0x0e,
         'a': 0x01,
         'k': 0x0d,
         'q': 0x0c,
