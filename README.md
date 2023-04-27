@@ -11,11 +11,16 @@ You can checkout the tag to find the specific episode demo.
 
 <code>npm run start-server</code> 
 
+go to a front-end folder, for example start the react front-end:
 <code>cd Make-a-multiplayer-card-game/client/view-engine/react/doudizhu</code>
+
+change the `ip` in `globalConfig.ts` to your server ip 
 
 <code>npm run start</code> 
 
 open two tabs, then game will start.
+
+
 
 
 
