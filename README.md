@@ -8,8 +8,10 @@ You can check out different tags to access demos from specific episodes.
 1. Clone the repository:<br>
 - `git clone https://github.com/lizhiyu-me/Make-a-multiplayer-card-game.git`<br>
 - `cd Make-a-multiplayer-card-game`
-3. Install dependencies:<br>
+2. Install dependencies:<br>
 - `npm install`
+3. Start the server:<br>
+- `npm run start-server`<br>
 4. Choose a front-end implement, e.g. `react`(Cocos Creater and react-three-fiber are also supported):<br>
 - `cd client/view-engine/react/doudizhu`<br>
 - change the `ip` in `globalConfig.ts` to your server ip<br> 
