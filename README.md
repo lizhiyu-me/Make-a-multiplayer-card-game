@@ -1,24 +1,23 @@
 # Make-a-multiplayer-card-game
-## This repo is for a series of blogs on [my blog site](https://lizhiyu.me)
-This main branch is update to the latest progress and will be the complete project.
+## This repository supports a series of blog posts on [my blog](https://lizhiyu.me). 
+The main branch is regularly updated to reflect the latest progress and will eventually contain the complete project.
+You can check out different tags to access demos from specific episodes.
 
-You can checkout the tag to find the specific episode demo.
 
-### Quick start
-<code>cd Make-a-multiplayer-card-game</code> 
+### Quick start Guide:
+1. Clone the repository:<br>
+- `git clone https://github.com/lizhiyu-me/Make-a-multiplayer-card-game.git`<br>
+- `cd Make-a-multiplayer-card-game`
+3. Install dependencies:<br>
+- `npm install`
+4. Choose a front-end implement, e.g. `react`(Cocos Creater and react-three-fiber are also supported):<br>
+- `cd client/view-engine/react/doudizhu`<br>
+- change the `ip` in `globalConfig.ts` to your server ip<br> 
+5. Start server and client<br>
+- `npm run start` 
 
-<code>npm install</code> 
+open two browser tabs to begin the game.
 
-<code>npm run start-server</code> 
-
-go to a front-end folder, for example start the react front-end:
-<code>cd Make-a-multiplayer-card-game/client/view-engine/react/doudizhu</code>
-
-change the `ip` in `globalConfig.ts` to your server ip 
-
-<code>npm run start</code> 
-
-open two tabs, then game will start.
 
 
 
